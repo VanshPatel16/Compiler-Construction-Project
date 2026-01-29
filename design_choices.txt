@@ -1,0 +1,1 @@
+1.) We match as much as possible, then if unexpected input is seen, then entire token [start, forward) will be thrown as lexical error.
