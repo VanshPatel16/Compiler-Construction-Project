@@ -1,7 +1,8 @@
 // contains data definitions for lexer
 #include <stdio.h>
-#define BUFFSIZE 50
-#define TBSIZE 100
+#include <stdbool.h>
+#define BUFFSIZE 2048
+#define TBSIZE 4096
 #define MAXLEX 35
 enum token_enum {
     TK_ASSIGNOP, 
@@ -77,4 +78,5 @@ typedef struct twinbuffer{
     int basePtr; // points to the start of the current lexeme.
     int forwardPtr; // points to the start of the next lexeme.
     FILE* fp;
+    bool isLastChunk;
 }TwinBuffer;
