@@ -62,7 +62,12 @@ enum token_enum {
     TK_GT,
     TK_GE,
     TK_NE,
-    TK_ERROR
+    // TK_ERROR changing ERROR to 
+    TK_ERRPATTERN,
+    TK_ERRUNK,
+    TK_ERRLENTHIRTY,
+    TK_ERRLENTWENTY,
+    TK_ERRLENNUM
 };
 
 typedef enum token_enum Token;

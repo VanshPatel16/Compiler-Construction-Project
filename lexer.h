@@ -8,5 +8,6 @@ TokenInfo* createToken(Token token, char* lexeme, int lineNo);
 void getFileStream(TwinBuffer* tb);
 TokenInfo* getNextToken(TwinBuffer* tb);
 void retract(TwinBuffer* tb);
+void removeComments(char* testcaseFile, char* cleanFile);
 
 

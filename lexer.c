@@ -12,9 +12,7 @@ bool isRelationalOp(char c){
 bool isIDAndKeyWord(char c){
     if('b' <= c && c <= 'd')
         return true;
-    if(c == '_')
-        return true;
-    if(c == '#')
+    if(c == '_') return true; if(c == '#')
         return true;
     if('a' <= c && c <= 'z')
         return true;
@@ -53,9 +51,42 @@ void handleWhiteSpace(char c){
     if(c == '\n'){
         lineNo++;
     }
-    // printf("Handled white space\n");
 }
 
+Token getTokenFromLexeme(const char *lexeme) {
+
+    if (!strcmp(lexeme, "while")) return TK_WHILE;
+    if (!strcmp(lexeme, "return")) return TK_RETURN;
+    if (!strcmp(lexeme, "main")) return TK_MAIN;
+    if (!strcmp(lexeme, "if")) return TK_IF;
+    if (!strcmp(lexeme, "then")) return TK_THEN;
+    if (!strcmp(lexeme, "endif")) return TK_ENDIF;
+    if (!strcmp(lexeme, "read")) return TK_READ;
+    if (!strcmp(lexeme, "write")) return TK_WRITE;
+    if (!strcmp(lexeme, "call")) return TK_CALL;
+    if (!strcmp(lexeme, "record")) return TK_RECORD;
+    if (!strcmp(lexeme, "endrecord")) return TK_ENDRECORD;
+    if (!strcmp(lexeme, "union")) return TK_UNION;
+    if (!strcmp(lexeme, "endunion")) return TK_ENDUNION;
+    if (!strcmp(lexeme, "definetype")) return TK_DEFINETYPE;
+    if (!strcmp(lexeme, "as")) return TK_AS;
+    if (!strcmp(lexeme, "type")) return TK_TYPE;
+    if (!strcmp(lexeme, "global")) return TK_GLOBAL;
+    if (!strcmp(lexeme, "parameter")) return TK_PARAMETER;
+    if (!strcmp(lexeme, "parameters")) return TK_PARAMETERS;
+    if (!strcmp(lexeme, "list")) return TK_LIST;
+    if (!strcmp(lexeme, "input")) return TK_INPUT;
+    if (!strcmp(lexeme, "output")) return TK_OUTPUT;
+    if (!strcmp(lexeme, "int")) return TK_INT;
+    if (!strcmp(lexeme, "real")) return TK_REAL;
+    if (!strcmp(lexeme, "else")) return TK_ELSE;
+    if (!strcmp(lexeme, "with")) return TK_WITH;
+    if (!strcmp(lexeme, "_main")) return TK_MAIN;
+    if (!strcmp(lexeme, "end")) return TK_END;
+    if (!strcmp(lexeme, "endwhile")) return TK_ENDWHILE;
+
+    return TK_FIELDID;
+}
 
 Token tokenizeRelationalOp(char* lexeme, TwinBuffer* tb){
     enum relopStates{
@@ -87,13 +118,15 @@ Token tokenizeRelationalOp(char* lexeme, TwinBuffer* tb){
         exit(1);
     }
     while(true){
-        if(lexIdx >= MAXLEX){
+        
+        c = getNextChar(tb);
+        
+        if(lexIdx + 1 >= MAXLEX){
+
             perror("lexeme too long in RelationalOp");
             exit(1);
             
         }
-        c = getNextChar(tb);
-        
         switch(state){
             case Less:
                 if(c == '-'){
@@ -101,30 +134,27 @@ Token tokenizeRelationalOp(char* lexeme, TwinBuffer* tb){
                 }else if(c == '='){
                     state = LessEq;
                 }else{
-                    // accept <
                     return TK_LT;
                 }
                 break;
             case LessEq:
-                // accept L<=
                 return TK_LE;
                 break;
             case LessD:
                 if(c == '-'){
                     state = LessDD;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case LessDD:
                 if(c == '-'){
                     state = LessDDD;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case LessDDD:
-                // accept <--
                 return TK_ASSIGNOP;
                 break;
             case Great:
@@ -151,7 +181,7 @@ Token tokenizeRelationalOp(char* lexeme, TwinBuffer* tb){
                 if(c == '='){
                     state = EqEq;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case EqEq:
@@ -204,14 +234,14 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
             perror("Lexeme is too long");
             exit(1);
         }
-        
         c = getNextChar(tb);
+        
         switch(state){
             case Hash:
                 if('a' <= c && c <= 'z'){
                     state = HashA;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             
@@ -227,7 +257,7 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 if(('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')){
                     state = UscoreA;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             
@@ -238,11 +268,13 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                     state = UscoreAD;
                 }else{
                     // check if function is main
-                    if(lexIdx==5 && lexeme[1]=='m' && lexeme[2]=='a' && lexeme[3]=='i' && lexeme[4]=='n'){
+                    if(lexIdx == 5 && !strncmp(lexeme, "main", 4)){
                         return TK_MAIN;
                     }else{
                         if(lexIdx > 30){
-                            return TK_ERROR;
+                            // if more than 30 have been written
+                            // enforced length 30 for funid.
+                            return TK_ERRLENTHIRTY;
                         }
                         return TK_FUNID;
                     }
@@ -263,7 +295,11 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 }else if('a' <= c && c <= 'z'){
                     state = AminusBD;
                 }else{
-                    return TK_FIELDID;
+                    if(lexIdx > 20){
+                        // 20 have already been written
+                        return TK_ERRLENTWENTY;
+                    }
+                    return getTokenFromLexeme(lexeme);
                 }
                 break;
                 
@@ -273,7 +309,11 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 }else if('b' <= c && c <= 'd'){
                     state = BD27;
                 }else{
-                    
+                    if(lexIdx > 20){
+                        // 20 have already been written
+                        // enforcing length 20 on TK_ID
+                        return TK_ERRLENTWENTY;
+                    }
                     return TK_ID;
                 }
                 break;
@@ -283,7 +323,9 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                     state = BD2727;
                 }else{
                     if(lexIdx > 20){
-                        return TK_ERROR;
+                        // 20 have already been written
+                        // enforced the limits for TK_ID.
+                        return TK_ERRLENTWENTY;
                     }
                     return TK_ID;
                 }
@@ -293,7 +335,8 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 if('a' <= c && c <= 'z'){
                     state = AminusBD;
                 }else{
-                    return TK_FIELDID;
+                    // assumed that there is no length limit for field id?!
+                    return getTokenFromLexeme(lexeme);
                 }
                 break;
 
@@ -323,7 +366,7 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
     char c = lexeme[0];
     int lexIdx = 1;
     while(true){
-        if(lexIdx == MAXLEX){
+        if(lexIdx >= MAXLEX){
             perror("lexeme too long in tokenizeNumber");
             exit(1);
         }
@@ -331,11 +374,13 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
         switch(state){
             case Dstar:
                 if('0' <= c && c <= '9'){
-                    // will stay in Dstar
                     state = Dstar;
                 }else if(c == '.'){
                     state = DstarDot;
                 }else{
+                    if(lexIdx > 16){
+                        return TK_ERRLENNUM;
+                    }
                     return TK_NUM;
                 }
                 break;
@@ -343,20 +388,23 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
                 if('0' <= c && c <= '9'){
                     state = DstarDotD;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case DstarDotD:
                 if('0' <= c && c <= '9'){
                     state = DstarDotDD;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case DstarDotDD:
                 if(c == 'E'){
                     state = DstarDotDDE;
                 }else{
+                    if(lexIdx > 16){
+                        return TK_ERRLENNUM;
+                    }
                     return TK_RNUM;
                 }
                 break;
@@ -366,24 +414,27 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
                 }else if('0' <= c && c <= '9'){
                     state = DstarDotDDESD;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case DstarDotDDES:
                 if('0' <= c && c <= '9'){
                     state = DstarDotDDESD;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case DstarDotDDESD:
                 if('0'<= c && c <= '9'){
                     state = DstarDotDDESDD;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;  
             case DstarDotDDESDD:
+                    if(lexIdx > 16){
+                        return TK_ERRLENNUM;
+                    }
                 return TK_RNUM;
                 break;
             default:
@@ -401,53 +452,6 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
 }
 
 Token tokenizeLogicalOp(char* lexeme, TwinBuffer* tb){
-    // int lexIndex = 1;
-    // char c = lexeme[0];
-    // if(c == '~'){
-    //     // Logical NOT
-    //     return TK_NOT;
-    // }else if(c == '&'){
-    //     // Logical AND
-    //     c = getNextChar(tb);
-    //     if(c == '&'){
-    //         lexeme[lexIndex] = c;
-    //         lexIndex++;
-    //         c = getNextChar(tb);
-    //         if(c == '&'){
-    //             lexeme[lexIndex] = c;
-    //             retract(tb);
-    //             return TK_AND;
-    //         }else{
-    //             retract(tb);
-    //             return TK_ERROR;
-    //         }
-    //     }else{
-    //         retract(tb);
-    //         return TK_ERROR;
-    //     }
-    // }else if(c == '@'){
-    //     // Logical OR
-    //     c = getNextChar(tb);
-    //     if(c == '@'){
-    //         lexeme[lexIndex] = c;
-    //         lexIndex++;
-    //         c = getNextChar(tb);
-    //         if(c == '@'){
-    //             lexeme[lexIndex] = c;
-    //             retract(tb);
-    //             return TK_OR;
-    //         }else{
-    //             retract(tb);
-    //             return TK_ERROR;
-    //         }
-    //     }else{
-    //         retract(tb);
-    //         return TK_ERROR;
-    //     }
-    // }else{
-    //     perror("Not a Logical Op");
-    //     exit(1);
-    // }
 
     enum logicalopStates{
         A,
@@ -478,14 +482,14 @@ Token tokenizeLogicalOp(char* lexeme, TwinBuffer* tb){
                 if(c == '&'){
                     state = AA;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case AA:
                 if(c == '&'){
                     state = AAA;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case AAA:
@@ -494,14 +498,14 @@ Token tokenizeLogicalOp(char* lexeme, TwinBuffer* tb){
                 if(c == '@'){
                     state = OO;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case OO:
                 if(c == '@'){
                     state = OOO;
                 }else{
-                    return TK_ERROR;
+                    return TK_ERRPATTERN;
                 }
                 break;
             case OOO:
@@ -546,13 +550,10 @@ Token tokenizeComment(char* lexeme, TwinBuffer* tb){
             perror("comment larger than buff size\n");
             exit(1);
         }
-        // printf("lex : %s\n", lexeme);
         c = getNextChar(tb);
         if(c == '\n'){
             return TK_COMMENT;
         }
-        // lexeme[lexIdx] = c;
-        // lexIdx++;
     }
 
     perror("outside While in Comment");
@@ -604,8 +605,6 @@ void getFileStream(TwinBuffer* tb){
         exit(1);
     }
     size_t read = fread(tb->buffer + tb->tbStart, sizeof(char), BUFFSIZE, tb->fp);
-    // printf("Bytes read : %d\n", read);
-    // printf("Buffer : %s\n", tb->buffer);
 
     if(read < BUFFSIZE){
         tb->isLastChunk = true;
@@ -616,7 +615,6 @@ void getFileStream(TwinBuffer* tb){
 
 char getNextChar(TwinBuffer* tb){
     char c = tb->buffer[tb->forwardPtr];
-    // printf("fwd : %d c :%c \n", tb->forwardPtr, c);
     tb->forwardPtr = (tb->forwardPtr + 1) % TBSIZE;
     if(tb->forwardPtr == tb->tbStart){
         getFileStream(tb);
@@ -637,7 +635,6 @@ TokenInfo* createToken(Token token, char* lexeme, int lineNo){
     tk->token = token;
     strcpy(tk->lexeme, lexeme); // need to check if this works!!!
     tk->lineNo = lineNo;
-    // printf("Created Token %d\n", token);
     fflush(stdout);
     return tk;
 }
@@ -647,7 +644,6 @@ TokenInfo* getNextToken(TwinBuffer* tb){
     char lexeme[BUFFSIZE];
     memset(lexeme, '\0', sizeof(char) * BUFFSIZE);
     int tkLineNo = -1;
-    // read the twinBuffer and identify Tokens from the input stream and return the token tuple
     char c = getNextChar(tb);
     if(c == EOF){
         return createToken(-1, "EOF", lineNo);
@@ -680,14 +676,38 @@ TokenInfo* getNextToken(TwinBuffer* tb){
     }else if(isWhiteSpace(c)){
         handleWhiteSpace(c);
         shiftPointers(tb);
-        // printf("Shifted ptrs\n");
         return NULL; // as we're not tokenizing word boundaries.
     }else{
         // c not in vocabulary. throw lexical error
-        token = TK_ERROR;
+        token = TK_ERRUNK;
     }
     shiftPointers(tb);
     if(!isCmt)
         tkLineNo = lineNo;
     return createToken(token, lexeme, tkLineNo);
+}
+
+void removeComments(char* testcaseFile, char* cleanFile){
+    
+    FILE* fpInput = fopen(testcaseFile, "r");
+    FILE* fpOutput = fopen(cleanFile, "w");
+
+    int ch;
+    bool commentActive = false;
+    while((ch = fgetc(fpInput)) != EOF){
+        if(ch == '\n'){
+            commentActive = false;
+        }
+        if(ch == (int)('%') || commentActive){
+            commentActive = true;
+            continue;
+        }
+        int isEOF = fputc(ch, fpOutput);
+        if(isEOF == EOF){
+            perror("Detected EOF when writing!\n");
+            exit(1);
+        }
+    }
+
+    return;
 }

@@ -64,7 +64,6 @@ const char* tokenToString(enum token_enum token) {
         case TK_GT:         return "TK_GT";
         case TK_GE:         return "TK_GE";
         case TK_NE:         return "TK_NE";
-        case TK_ERROR:      return "TK_ERROR";
         default:            return "UNKNOWN_TOKEN";
     }
 }
@@ -79,6 +78,22 @@ void main()
         }
         if(!strcmp(curToken->lexeme, "EOF")){
             break;
+        }
+        if(curToken->token == TK_ERRPATTERN){
+            printf("Line no %d : Error: Unknown pattern <%s>\n", curToken->lineNo, curToken->lexeme);
+            continue;
+        }
+        if(curToken->token == TK_ERRUNK){
+            printf("Line no %d : Error: Unknown Symbol <%s>\n", curToken->lineNo, curToken->lexeme);
+            continue;
+        }
+        if(curToken->token == TK_ERRLENTWENTY){
+            printf("Line no %d : Error: Variable Identifier is longer than the prescribed length of 20 characters\n", curToken->lineNo);
+            continue;
+        }
+        if(curToken->token == TK_ERRLENTHIRTY){
+            printf("Line no %d : Error: Function Identifier is longer than the prescribed length of 30 characters\n", curToken->lineNo);
+            continue;
         }
         printf("<Lexeme : %s, Token : <%s>, LineNo : %d>\n", curToken->lexeme, tokenToString(curToken->token), curToken->lineNo);
     }
