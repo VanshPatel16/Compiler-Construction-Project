@@ -688,7 +688,7 @@ TokenInfo* getNextToken(TwinBuffer* tb){
     return createToken(token, lexeme, tkLineNo);
 }
 
-void removeComments(char* testcaseFile, char* cleanFile){
+void removeComments(const char* testcaseFile, const char* cleanFile){
     
     FILE* fpInput = fopen(testcaseFile, "r");
     FILE* fpOutput = fopen(cleanFile, "w");

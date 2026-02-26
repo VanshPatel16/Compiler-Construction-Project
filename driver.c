@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#define MAXFILESZ 8000
 const char* tokenToString(enum token_enum token) {
     switch (token) {
         case TK_ASSIGNOP:   return "TK_ASSIGNOP";
@@ -70,7 +70,7 @@ const char* tokenToString(enum token_enum token) {
 void main()
 {
     TwinBuffer* tb = (TwinBuffer*) malloc(sizeof(struct twinbuffer));
-    init("test.txt", tb);
+    init("Lexer Test Cases/t2.txt", tb);
     while(true){
         TokenInfo* curToken = getNextToken(tb);
         if(curToken == NULL){
@@ -102,4 +102,6 @@ void main()
         }
         printf("Line no. %d\t Lexeme %s\t\tToken %s\n", curToken->lineNo, curToken->lexeme, tokenToString(curToken->token));
     }
+
+    removeComments("Lexer Test Cases/t2.txt", "outputtest.txt");
 }
