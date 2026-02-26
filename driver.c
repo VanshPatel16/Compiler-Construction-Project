@@ -80,21 +80,26 @@ void main()
             break;
         }
         if(curToken->token == TK_ERRPATTERN){
-            printf("Line no %d : Error: Unknown pattern <%s>\n", curToken->lineNo, curToken->lexeme);
+            printf("Line no %d : Error: Unknown pattern <%s>\n", curToken->lineNo,curToken->lexeme);
             continue;
         }
         if(curToken->token == TK_ERRUNK){
-            printf("Line no %d : Error: Unknown Symbol <%s>\n", curToken->lineNo, curToken->lexeme);
+            printf("Line no %d : Error : Unknown Symbol <%s>\n", curToken->lineNo,curToken->lexeme);
             continue;
         }
         if(curToken->token == TK_ERRLENTWENTY){
-            printf("Line no %d : Error: Variable Identifier is longer than the prescribed length of 20 characters\n", curToken->lineNo);
+            printf("Line no %d : Error : Variable Identifier is longer than the prescribed length of 20 characters.\n", curToken->lineNo);
             continue;
         }
+
         if(curToken->token == TK_ERRLENTHIRTY){
-            printf("Line no %d : Error: Function Identifier is longer than the prescribed length of 30 characters\n", curToken->lineNo);
+            printf("Line no %d : Error : Function Identifier is longer than the prescribed length of 30 characters.\n", curToken->lineNo);
             continue;
         }
-        printf("<Lexeme : %s, Token : <%s>, LineNo : %d>\n", curToken->lexeme, tokenToString(curToken->token), curToken->lineNo);
+        if(curToken->token == TK_ERRLENNUM){
+            printf("Line no %d : Number is longer than the prescribed length of 17 characters.\n", curToken->lineNo);
+            continue;
+        }
+        printf("Line no. %d\t Lexeme %s\t\tToken %s\n", curToken->lineNo, curToken->lexeme, tokenToString(curToken->token));
     }
 }

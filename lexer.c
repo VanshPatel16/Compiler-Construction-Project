@@ -121,7 +121,7 @@ Token tokenizeRelationalOp(char* lexeme, TwinBuffer* tb){
         
         c = getNextChar(tb);
         
-        if(lexIdx + 1 >= MAXLEX){
+        if(lexIdx + 1 >= BUFFSIZE){
 
             perror("lexeme too long in RelationalOp");
             exit(1);
@@ -268,7 +268,7 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                     state = UscoreAD;
                 }else{
                     // check if function is main
-                    if(lexIdx == 5 && !strncmp(lexeme, "main", 4)){
+                    if(lexIdx == 5 && !strncmp(lexeme, "_main", 5)){
                         return TK_MAIN;
                     }else{
                         if(lexIdx > 30){
@@ -366,7 +366,7 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
     char c = lexeme[0];
     int lexIdx = 1;
     while(true){
-        if(lexIdx >= MAXLEX){
+        if(lexIdx >= BUFFSIZE){
             perror("lexeme too long in tokenizeNumber");
             exit(1);
         }
@@ -631,7 +631,8 @@ void retract(TwinBuffer* tb){
 
 TokenInfo* createToken(Token token, char* lexeme, int lineNo){
     TokenInfo* tk = (TokenInfo*)malloc(sizeof(TokenInfo));
-    tk->lexeme = (char*)malloc(MAXLEX * sizeof(char));
+    int lengthRead = strlen(lexeme);
+    tk->lexeme = (char*)malloc(lengthRead * sizeof(char));
     tk->token = token;
     strcpy(tk->lexeme, lexeme); // need to check if this works!!!
     tk->lineNo = lineNo;
@@ -708,6 +709,9 @@ void removeComments(char* testcaseFile, char* cleanFile){
             exit(1);
         }
     }
+
+    fclose(fpInput);
+    fclose(fpOutput);
 
     return;
 }
