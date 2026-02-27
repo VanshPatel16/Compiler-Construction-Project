@@ -1,10 +1,11 @@
+
 // contains main()
 #include <stdio.h>
 #include "lexer.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#define MAXFILESZ 8000
+
 const char* tokenToString(enum token_enum token) {
     switch (token) {
         case TK_ASSIGNOP:   return "TK_ASSIGNOP";

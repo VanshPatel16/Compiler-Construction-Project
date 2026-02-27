@@ -2,3 +2,4 @@
 *.exe
 /Lexer Test Cases
 /Parser Test Cases
+*txt
