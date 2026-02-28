@@ -55,37 +55,37 @@ void handleWhiteSpace(char c){
 
 Token getTokenFromLexeme(const char *lexeme) {
 
-    if (!strcmp(lexeme, "while")) return TK_WHILE;
-    if (!strcmp(lexeme, "return")) return TK_RETURN;
-    if (!strcmp(lexeme, "main")) return TK_MAIN;
-    if (!strcmp(lexeme, "if")) return TK_IF;
-    if (!strcmp(lexeme, "then")) return TK_THEN;
-    if (!strcmp(lexeme, "endif")) return TK_ENDIF;
-    if (!strcmp(lexeme, "read")) return TK_READ;
-    if (!strcmp(lexeme, "write")) return TK_WRITE;
-    if (!strcmp(lexeme, "call")) return TK_CALL;
-    if (!strcmp(lexeme, "record")) return TK_RECORD;
-    if (!strcmp(lexeme, "endrecord")) return TK_ENDRECORD;
-    if (!strcmp(lexeme, "union")) return TK_UNION;
-    if (!strcmp(lexeme, "endunion")) return TK_ENDUNION;
-    if (!strcmp(lexeme, "definetype")) return TK_DEFINETYPE;
-    if (!strcmp(lexeme, "as")) return TK_AS;
-    if (!strcmp(lexeme, "type")) return TK_TYPE;
-    if (!strcmp(lexeme, "global")) return TK_GLOBAL;
-    if (!strcmp(lexeme, "parameter")) return TK_PARAMETER;
-    if (!strcmp(lexeme, "parameters")) return TK_PARAMETERS;
-    if (!strcmp(lexeme, "list")) return TK_LIST;
-    if (!strcmp(lexeme, "input")) return TK_INPUT;
-    if (!strcmp(lexeme, "output")) return TK_OUTPUT;
-    if (!strcmp(lexeme, "int")) return TK_INT;
-    if (!strcmp(lexeme, "real")) return TK_REAL;
-    if (!strcmp(lexeme, "else")) return TK_ELSE;
-    if (!strcmp(lexeme, "with")) return TK_WITH;
-    if (!strcmp(lexeme, "_main")) return TK_MAIN;
-    if (!strcmp(lexeme, "end")) return TK_END;
-    if (!strcmp(lexeme, "endwhile")) return TK_ENDWHILE;
+    if (!strcmp(lexeme, "while")) return LEX_TK_WHILE;
+    if (!strcmp(lexeme, "return")) return LEX_TK_RETURN;
+    if (!strcmp(lexeme, "main")) return LEX_TK_MAIN;
+    if (!strcmp(lexeme, "if")) return LEX_TK_IF;
+    if (!strcmp(lexeme, "then")) return LEX_TK_THEN;
+    if (!strcmp(lexeme, "endif")) return LEX_TK_ENDIF;
+    if (!strcmp(lexeme, "read")) return LEX_TK_READ;
+    if (!strcmp(lexeme, "write")) return LEX_TK_WRITE;
+    if (!strcmp(lexeme, "call")) return LEX_TK_CALL;
+    if (!strcmp(lexeme, "record")) return LEX_TK_RECORD;
+    if (!strcmp(lexeme, "endrecord")) return LEX_TK_ENDRECORD;
+    if (!strcmp(lexeme, "union")) return LEX_TK_UNION;
+    if (!strcmp(lexeme, "endunion")) return LEX_TK_ENDUNION;
+    if (!strcmp(lexeme, "definetype")) return LEX_TK_DEFINETYPE;
+    if (!strcmp(lexeme, "as")) return LEX_TK_AS;
+    if (!strcmp(lexeme, "type")) return LEX_TK_TYPE;
+    if (!strcmp(lexeme, "global")) return LEX_TK_GLOBAL;
+    if (!strcmp(lexeme, "parameter")) return LEX_TK_PARAMETER;
+    if (!strcmp(lexeme, "parameters")) return LEX_TK_PARAMETERS;
+    if (!strcmp(lexeme, "list")) return LEX_TK_LIST;
+    if (!strcmp(lexeme, "input")) return LEX_TK_INPUT;
+    if (!strcmp(lexeme, "output")) return LEX_TK_OUTPUT;
+    if (!strcmp(lexeme, "int")) return LEX_TK_INT;
+    if (!strcmp(lexeme, "real")) return LEX_TK_REAL;
+    if (!strcmp(lexeme, "else")) return LEX_TK_ELSE;
+    if (!strcmp(lexeme, "with")) return LEX_TK_WITH;
+    if (!strcmp(lexeme, "_main")) return LEX_TK_MAIN;
+    if (!strcmp(lexeme, "end")) return LEX_TK_END;
+    if (!strcmp(lexeme, "endwhile")) return LEX_TK_ENDWHILE;
 
-    return TK_FIELDID;
+    return LEX_TK_FIELDID;
 }
 
 Token tokenizeRelationalOp(char* lexeme, TwinBuffer* tb){
@@ -134,58 +134,58 @@ Token tokenizeRelationalOp(char* lexeme, TwinBuffer* tb){
                 }else if(c == '='){
                     state = LessEq;
                 }else{
-                    return TK_LT;
+                    return LEX_TK_LT;
                 }
                 break;
             case LessEq:
-                return TK_LE;
+                return LEX_TK_LE;
                 break;
             case LessD:
                 if(c == '-'){
                     state = LessDD;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case LessDD:
                 if(c == '-'){
                     state = LessDDD;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case LessDDD:
-                return TK_ASSIGNOP;
+                return LEX_TK_ASSIGNOP;
                 break;
             case Great:
                 if(c == '='){
                     state = GreatEq;
                 }else{
-                    return TK_GT;
+                    return LEX_TK_GT;
                 }
                 break;
             case GreatEq:
-                return TK_GE;
+                return LEX_TK_GE;
                 break;
             case Not:
                 if(c == '='){
                     state = NotEq;
                 }else{
-                    return TK_NOT;
+                    return LEX_TK_NOT;
                 }
                 break;
             case NotEq:
-                return TK_NE;
+                return LEX_TK_NE;
                 break;
             case Eq:
                 if(c == '='){
                     state = EqEq;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case EqEq:
-                return TK_EQ;
+                return LEX_TK_EQ;
                 break;
             default:
                 perror("impossible in Relop");
@@ -241,7 +241,7 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 if('a' <= c && c <= 'z'){
                     state = HashA;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             
@@ -249,7 +249,7 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 if('a' <= c && c <= 'z'){
                     state = HashA;
                 }else{
-                    return TK_RUID;
+                    return LEX_TK_RUID;
                 }
                 break;
                 
@@ -257,7 +257,7 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 if(('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')){
                     state = UscoreA;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             
@@ -269,14 +269,14 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 }else{
                     // check if function is main
                     if(lexIdx == 5 && !strncmp(lexeme, "_main", 5)){
-                        return TK_MAIN;
+                        return LEX_TK_MAIN;
                     }else{
                         if(lexIdx > 30){
                             // if more than 30 have been written
                             // enforced length 30 for funid.
-                            return TK_ERRLENTHIRTY;
+                            return LEX_TK_ERRLENTHIRTY;
                         }
-                        return TK_FUNID;
+                        return LEX_TK_FUNID;
                     }
                 }
                 break;
@@ -285,7 +285,7 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 if('0' <= c && c <= '9'){
                     state = UscoreAD;
                 }else{
-                    return TK_FUNID;
+                    return LEX_TK_FUNID;
                 }
                 break;
             
@@ -297,7 +297,7 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 }else{
                     if(lexIdx > 20){
                         // 20 have already been written
-                        return TK_ERRLENTWENTY;
+                        return LEX_TK_ERRLENTWENTY;
                     }
                     return getTokenFromLexeme(lexeme);
                 }
@@ -311,10 +311,10 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 }else{
                     if(lexIdx > 20){
                         // 20 have already been written
-                        // enforcing length 20 on TK_ID
-                        return TK_ERRLENTWENTY;
+                        // enforcing length 20 on LEX_TK_ID
+                        return LEX_TK_ERRLENTWENTY;
                     }
-                    return TK_ID;
+                    return LEX_TK_ID;
                 }
                 break;
             
@@ -324,10 +324,10 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
                 }else{
                     if(lexIdx > 20){
                         // 20 have already been written
-                        // enforced the limits for TK_ID.
-                        return TK_ERRLENTWENTY;
+                        // enforced the limits for LEX_TK_ID.
+                        return LEX_TK_ERRLENTWENTY;
                     }
-                    return TK_ID;
+                    return LEX_TK_ID;
                 }
                 break;
 
@@ -379,23 +379,23 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
                     state = DstarDot;
                 }else{
                     if(lexIdx > 16){
-                        return TK_ERRLENNUM;
+                        return LEX_TK_ERRLENNUM;
                     }
-                    return TK_NUM;
+                    return LEX_TK_NUM;
                 }
                 break;
             case DstarDot:
                 if('0' <= c && c <= '9'){
                     state = DstarDotD;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case DstarDotD:
                 if('0' <= c && c <= '9'){
                     state = DstarDotDD;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case DstarDotDD:
@@ -403,9 +403,9 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
                     state = DstarDotDDE;
                 }else{
                     if(lexIdx > 16){
-                        return TK_ERRLENNUM;
+                        return LEX_TK_ERRLENNUM;
                     }
-                    return TK_RNUM;
+                    return LEX_TK_RNUM;
                 }
                 break;
             case DstarDotDDE:
@@ -414,28 +414,28 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
                 }else if('0' <= c && c <= '9'){
                     state = DstarDotDDESD;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case DstarDotDDES:
                 if('0' <= c && c <= '9'){
                     state = DstarDotDDESD;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case DstarDotDDESD:
                 if('0'<= c && c <= '9'){
                     state = DstarDotDDESDD;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;  
             case DstarDotDDESDD:
                     if(lexIdx > 16){
-                        return TK_ERRLENNUM;
+                        return LEX_TK_ERRLENNUM;
                     }
-                return TK_RNUM;
+                return LEX_TK_RNUM;
                 break;
             default:
                 perror("impossible in Number");
@@ -482,37 +482,37 @@ Token tokenizeLogicalOp(char* lexeme, TwinBuffer* tb){
                 if(c == '&'){
                     state = AA;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case AA:
                 if(c == '&'){
                     state = AAA;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case AAA:
-                return TK_AND;
+                return LEX_TK_AND;
             case O:
                 if(c == '@'){
                     state = OO;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case OO:
                 if(c == '@'){
                     state = OOO;
                 }else{
-                    return TK_ERRPATTERN;
+                    return LEX_TK_ERRPATTERN;
                 }
                 break;
             case OOO:
-                return TK_OR;
+                return LEX_TK_OR;
                 break;
             case NOT:
-                return TK_NOT;
+                return LEX_TK_NOT;
                 break;
             default:
                 perror("Impossible in logicalOp\n");
@@ -529,13 +529,13 @@ Token tokenizeLogicalOp(char* lexeme, TwinBuffer* tb){
 Token tokenizeDelimeter(char* lexeme, TwinBuffer* tb){
     char c = lexeme[0];
     if(c == '.'){
-        return TK_DOT;
+        return LEX_TK_DOT;
     }else if(c == ','){
-        return TK_COMMA;
+        return LEX_TK_COMMA;
     }else if(c == ':'){
-        return TK_COLON;
+        return LEX_TK_COLON;
     }else if(c == ';'){
-        return TK_SEM;
+        return LEX_TK_SEM;
     }else{
         perror("Not a Delimeter");
         exit(1);
@@ -552,7 +552,7 @@ Token tokenizeComment(char* lexeme, TwinBuffer* tb){
         }
         c = getNextChar(tb);
         if(c == '\n'){
-            return TK_COMMENT;
+            return LEX_TK_COMMENT;
         }
     }
 
@@ -564,13 +564,13 @@ Token tokenizeComment(char* lexeme, TwinBuffer* tb){
 Token tokenizeBracket(char* lexeme, TwinBuffer* tb){
     char c = lexeme[0];
     if(c == '('){
-        return TK_OP;
+        return LEX_TK_OP;
     }else if(c == ')'){
-        return TK_CL;
+        return LEX_TK_CL;
     }else if(c == '['){
-        return TK_SQL;
+        return LEX_TK_SQL;
     }else if(c == ']'){
-        return TK_SQR;
+        return LEX_TK_SQR;
     }else{
         perror("Not a Bracker");
         exit(1);
@@ -580,20 +580,20 @@ Token tokenizeBracket(char* lexeme, TwinBuffer* tb){
 Token tokenizeArithmeticOp(char* lexeme, TwinBuffer* tb){
     char c = lexeme[0];
     if(c == '+'){
-        return TK_PLUS;
+        return LEX_TK_PLUS;
     }else if(c == '-'){
-        return TK_MINUS;
+        return LEX_TK_MINUS;
     }else if(c == '*'){
-        return TK_MUL;
+        return LEX_TK_MUL;
     }else if(c == '/'){
-        return TK_DIV;
+        return LEX_TK_DIV;
     }else{
         perror("Not an Arithmetic Op");
         exit(1);
     }
 }   
 
-void init(char* fileName, TwinBuffer* tb){
+void init(const char* fileName, TwinBuffer* tb){
     memset(tb, 0, sizeof(TwinBuffer));
     tb->fp = fopen(fileName, "r");
     getFileStream(tb);
@@ -631,10 +631,10 @@ void retract(TwinBuffer* tb){
 
 TokenInfo* createToken(Token token, char* lexeme, int lineNo){
     TokenInfo* tk = (TokenInfo*)malloc(sizeof(TokenInfo));
-    int lengthRead = strlen(lexeme);
+    int lengthRead = strlen(lexeme) + 1;
     tk->lexeme = (char*)malloc(lengthRead * sizeof(char));
     tk->token = token;
-    strcpy(tk->lexeme, lexeme); 
+    strcpy(tk->lexeme, lexeme); // need to check if this works!!!
     tk->lineNo = lineNo;
     fflush(stdout);
     return tk;
@@ -680,12 +680,34 @@ TokenInfo* getNextToken(TwinBuffer* tb){
         return NULL; // as we're not tokenizing word boundaries.
     }else{
         // c not in vocabulary. throw lexical error
-        token = TK_ERRUNK;
+        token = LEX_TK_ERRUNK;
     }
     shiftPointers(tb);
     if(!isCmt)
         tkLineNo = lineNo;
-    return createToken(token, lexeme, tkLineNo);
+    
+    TokenInfo* curToken = createToken(token, lexeme, tkLineNo); 
+    if(curToken->token == LEX_TK_ERRPATTERN){
+        printf("Line no %d : Error: Unknown pattern <%s>\n", curToken->lineNo,curToken->lexeme);
+        return getNextToken(tb);
+    }
+    if(curToken->token == LEX_TK_ERRUNK){
+        printf("Line no %d : Error : Unknown Symbol <%s>\n", curToken->lineNo,curToken->lexeme);
+        return getNextToken(tb);
+    }
+    if(curToken->token == LEX_TK_ERRLENTWENTY){
+        printf("Line no %d : Error : Variable Identifier is longer than the prescribed length of 20 characters.\n", curToken->lineNo);
+        return getNextToken(tb);
+    }
+    if(curToken->token == LEX_TK_ERRLENTHIRTY){
+        printf("Line no %d : Error : Function Identifier is longer than the prescribed length of 30 characters.\n", curToken->lineNo);
+        return getNextToken(tb);
+    }
+    if(curToken->token == LEX_TK_ERRLENNUM){
+        printf("Line no %d : Number is longer than the prescribed length of 17 characters.\n", curToken->lineNo);
+        return getNextToken(tb);
+    }
+    return curToken;
 }
 
 void removeComments(const char* testcaseFile, const char* cleanFile){

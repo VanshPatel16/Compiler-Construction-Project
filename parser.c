@@ -1,8 +1,12 @@
 #include "parser.h"
+#include "lexer.h"
+
 bool isTerminal(grammarSymbol g){
     return g < NUMTOKENS;
 }
-
+bool isEqual(grammarSymbol g, Token t){
+    return (g == t);
+}
 void calculateFirstSets(Grammar* G){
     for(int symbol = 0; symbol < NUMSYMBOLS; symbol++){
         getFirst((grammarSymbol)symbol, G);
@@ -179,19 +183,6 @@ Grammar* constructGrammar(char* inputFile){
 }
 
 
-// bool* getFirstSentential(grammarSymbol* sententialForm, int tlen, Grammar* G, bool* allEps){
-//     bool* firstSet = (bool*)calloc(NUMTOKENS, sizeof(bool));
-//     *allEps = true;
-//     for(int symbol = 0;symbol < tlen; symbol++){
-//         grammarSymbol g = sententialForm[symbol];
-//         unite(firstSet, G->first[g]);
-//         if(!G->hasEPSILONFirst[g]){
-//             *allEps = false;
-//             break;
-//         }
-//     }
-//     return firstSet;
-// }
 
 bool* getFirstSentential(grammarSymbol* sententialForm,int tlen,Grammar* G,bool* allEps){
     bool* firstSet = (bool*)calloc(NUMTOKENS, sizeof(bool));
@@ -213,119 +204,280 @@ bool* getFirstSentential(grammarSymbol* sententialForm,int tlen,Grammar* G,bool*
     return firstSet;
 }
 
-// void populateParseTable(Grammar* G){
-//     for(int i=0; i<NUMSYMBOLS; i++) {
-//         for (int j=0; j<NUMTOKENS; j++) {
-//             for (int k=0; k<MAXTLEN; k++) {
-//                 G->parseTable[i][j][k] = PARSER_ERROR;
-//             }
-//         }
-//     }
 
-
-//     for(int LHS = 0; LHS < NUMSYMBOLS; LHS++){
-//         if(isTerminal(LHS))continue;
-        
-//         for(int rule = 0;rule < G->rules[LHS].rlen; rule++){
-//              // first se jo milega
-            
-//             int tlen = G->rules[LHS].tlen[rule];
-//             bool* allEps;
-//             *allEps = false;
-//             bool firstSet[MAXTLEN] = getFirstSentential(G->rules[LHS].RHS[rule], tlen, G, allEps);
-
-//             for(int terminal=0; terminal<MAXTLEN; terminal++){
-//                 if(firstSet[terminal]){
-//                     G->parseTable[LHS][terminal] = G->rules[LHS].RHS[rule];
-//                 }
-//             }
-
-//             if(*allEps){
-//                 for(int terminal=0; terminal<NUMTOKENS; terminal++){
-//                     if(G->follow[LHS][terminal]){
-//                         G->parseTable[LHS][terminal] = G->rules[LHS].RHS[rule];
-//                     }
-//                 }
-//             }
-            
-//             if(*allEps && G->follow[LHS][DOLLAR]){
-//                 G->parseTable[LHS][DOLLAR] = G->rules[LHS].RHS[rule];
-//             }
-            
-//         }
-//     }
-// }
-
-void populateParseTable(Grammar* G)
-{
-    for(int i = 0; i < NUMSYMBOLS; i++){
-        for(int j = 0; j < NUMTOKENS; j++){
+void populateParseTable(Grammar* G){
+    for(int i=0; i<NUMSYMBOLS; i++){
+        for(int j=0; j<NUMTOKENS; j++){
             G->parseTableRuleLen[i][j] = 0; // change 1
-            for(int k = 0; k < MAXTLEN; k++){
+            for(int k=0; k<MAXTLEN; k++){
                 G->parseTable[i][j][k] = PARSER_ERROR;
             }
         }
     }
 
-    for(int LHS = 0; LHS < NUMSYMBOLS; LHS++){
-        if(isTerminal(LHS)) continue;
+    for(int LHS=0; LHS<NUMSYMBOLS; LHS++){
+        if(isTerminal(LHS)){
+            continue;
+        }
 
-        for(int rule = 0; rule < G->rules[LHS].rlen; rule++){
-            int currulelen = G->rules[LHS].tlen[rule];
-
+        for(int rule=0; rule<G->rules[LHS].rlen; rule++){
+            int curRuleLen = G->rules[LHS].tlen[rule];
             bool allEps = false;
-
-            bool* firstSet = getFirstSentential(G->rules[LHS].RHS[rule],currulelen,G,&allEps);
-
-            for(int terminal = 0; terminal < NUMTOKENS; terminal++){
+            bool* firstSet = getFirstSentential(G->rules[LHS].RHS[rule],curRuleLen,G,&allEps);
+            for(int terminal=0; terminal<NUMTOKENS; terminal++){
                 if(firstSet[terminal]){
-                    for(int k = 0; k < currulelen; k++){
+                    for(int k=0; k<curRuleLen; k++){
                         G->parseTable[LHS][terminal][k] = G->rules[LHS].RHS[rule][k];
                     }
-                    G->parseTableRuleLen[LHS][terminal] = currulelen;
+                    G->parseTableRuleLen[LHS][terminal] = curRuleLen;
                 }
             }
 
             if(allEps){
-                for(int terminal = 0; terminal < NUMTOKENS; terminal++){
+                for(int terminal=0; terminal<NUMTOKENS; terminal++){
                     if(G->follow[LHS][terminal]){
-                        for(int k = 0; k < currulelen; k++){
-                            G->parseTable[LHS][terminal][k] =
-                                G->rules[LHS].RHS[rule][k];
+                        for(int k=0; k<curRuleLen; k++){
+                            G->parseTable[LHS][terminal][k] = G->rules[LHS].RHS[rule][k];
                         }
-                        G->parseTableRuleLen[LHS][terminal] = currulelen;
+                        G->parseTableRuleLen[LHS][terminal] = curRuleLen;
                     }
                 }
             }
             free(firstSet);
         }
     }
+    for(int LHS=0; LHS<NUMSYMBOLS; LHS++){
+        if(isTerminal(LHS)) continue;
+        for(int terminal=0; terminal<NUMTOKENS; terminal++){
+            if(G->follow[LHS][terminal] && G->parseTable[LHS][terminal][0] == PARSER_ERROR){
+                G->parseTable[LHS][terminal][0] = SYN;
+                G->parseTableRuleLen[LHS][terminal] = 0;
+            }
+        }
+    }
 }
 
-// void initStack(Stack* s){
-//     s->currentSize=0;
-// }
+Stack* initStack(){
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    memset(stack, 0, sizeof(Stack));
+    stack->currentSize = 0;
+    return stack;
+}
 
-Node* initNode(char* lexeme, char* numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode, grammarSymbol tokenName){
+void push(Stack* stack, Node* currNode){
+    stack->arr[stack->currentSize] = currNode;
+    stack->currentSize++;
+}
+
+Node* pop(Stack* stack){
+    if(!stack->currentSize){
+        perror("Popping from empty stack.");
+        return NULL;
+    }
+    return stack->arr[--(stack->currentSize)];
+}
+
+Node* top(Stack* stack){
+    if(!stack->currentSize){
+        perror("Accessing Top element from empty stack.");
+        return NULL;
+    }
+    return stack->arr[(stack->currentSize) - 1];
+}
+
+bool isEmpty(Stack* stack){
+    return stack->currentSize <= 0;
+}
+
+Node* initNode(char* lexeme, char* numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode){
     Node* curNode = (Node*)malloc(sizeof(Node));
-    int lexlengthRead = strlen(lexeme);
-    curNode->lexeme = (char*)malloc(sizeof(char) * lexlengthRead);
-    strcpy(curNode->lexeme, lexeme);
-    int numlengthRead = strlen(numValue);
-    curNode->numValue = (char*)malloc(sizeof(char)* numlengthRead);
-    strcpy(curNode->numValue, numValue);
+    memset(curNode, 0, sizeof(Node));
+    if(lexeme){
+        int lexlengthRead = strlen(lexeme);
+        curNode->lexeme = (char*)malloc(sizeof(char) * lexlengthRead);
+        strcpy(curNode->lexeme, lexeme);
+    }
+    if(numValue){
+        int numlengthRead = strlen(numValue);
+        curNode->numValue = (char*)malloc(sizeof(char)* numlengthRead);
+        strcpy(curNode->numValue, numValue);
+    }
 
     curNode->nodeSymbol = nodeSymbol;
     curNode->parentSymbol = parentSymbol;
     curNode->isLeafNode = isLeafNode;
-    if(curNode->isLeafNode){
-        curNode->tokenName = tokenName;
-    }
     curNode->numChildren = 0;
     // handle the children addition in another function. 
+    // printf("Created node for %s\n", getTokenString(nodeSymbol));
     return curNode;
 }
 
+void errorHandler(Grammar* G, Stack* stack, TokenInfo* curToken, TwinBuffer* tb){
+    // printf("Entered errror handler\n");
+    while(true){
+        if(curToken == NULL){
+            curToken = getNextToken(tb);
+            continue;
+        }
+        if(strcmp(curToken->lexeme, "EOF") == 0){
+            return;
+        }
+        if(isEmpty(stack)){
+            printf("Stack got over but input is left.\n");
+            return;
+        }
+        Node* topNode = top(stack);
+        if(topNode->isLeafNode){
+            pop(stack);
+            if(isEqual(topNode->nodeSymbol, curToken->token)){
+                // consume without errors.
+            }else{
+                // non equal terminals
+                printf("Syntax error on line %d expected token %s but found %s\n", curToken->lineNo, getTokenString(topNode->nodeSymbol), getTokenString(curToken->token));
+                continue; // as we dont want next token
+            }
+        }else{
+            grammarSymbol nonterminal = topNode->nodeSymbol;
+            grammarSymbol terminal = curToken->token;
+            if(G->parseTableRuleLen[nonterminal][terminal] > 0){
+                // parsing logic
+                // there is a valid rule to parse this
+                // pop the stack
+                pop(stack);
+                // push the rhs to stack in reverse order
+                // also create the nodes for them while doing so
+                for(int i = G->parseTableRuleLen[nonterminal][terminal] - 1; i >= 0; i--){
+                    grammarSymbol curSymb = G->parseTable[nonterminal][terminal][i];
+                    Node* curSymbNode = initNode(
+                        NULL,
+                        NULL,
+                        curSymb,
+                        nonterminal,
+                        isTerminal(curSymb)
+                    );
+                    topNode->children[i] = curSymbNode;
+                    topNode->numChildren++;
+                    if(curSymb != EPSILON)
+                        push(stack, curSymbNode);
+                }
+                continue;
+            }else{
+                if(G->parseTable[nonterminal][terminal][0] == PARSER_ERROR){
+                    printf("Line no : %d : Syntax Error. The current token : %s for lexeme : %s does not exist. Expected a construct for %s.\n", 
+                        curToken->lineNo,
+                        getTokenString(curToken->token),
+                        curToken->lexeme,
+                        getTokenString(topNode->nodeSymbol)
+                    );
+                }else if(G->parseTable[nonterminal][terminal][0] == SYN){
+                    printf("Line no : %d : Syntax Error. The construct : %s is missing. Synchronized on token %s.\n", 
+                        curToken->lineNo,
+                        getTokenString(topNode->nodeSymbol),
+                        curToken->lexeme
+                    );
+                    pop(stack);
+                    continue;
+                }else{
+                    perror("Unknown entry in parse table");
+                    exit(1);
+                }
+            }
+        }
+        curToken = getNextToken(tb);
+    }
+
+    printf("Error handling complete\n");
+    return;
+}
+
+void assignLexeme(Node* topNode, TokenInfo* curToken){
+    int lexreadLength = strlen(curToken->lexeme) + 1;
+    topNode->lexeme = (char*)malloc(sizeof(char) * lexreadLength);
+    topNode->numValue = (char*)malloc(sizeof(char) * lexreadLength);
+    strcpy(topNode->lexeme, curToken->lexeme);
+    strcpy(topNode->numValue, curToken->lexeme);
+    topNode->lineNo = curToken->lineNo;
+    return;
+}
+
+Node* constructParseTree(Grammar* G, const char* inputFileName){
+    // create stack and twin buffer
+    Stack* stack = initStack();
+    TwinBuffer* tb = (TwinBuffer*) malloc(sizeof(struct twinbuffer));
+    init(inputFileName, tb);
+    // add start symbol
+    Node* startNode = initNode(NULL, NULL, NT_PROGRAM, -1, false);
+    push(stack, startNode);
+    // while lexer gives tokens parse them
+    TokenInfo* curToken = getNextToken(tb);
+    while(true){
+
+        if(curToken == NULL){
+            curToken = getNextToken(tb);
+            continue;
+        }
+        if(strcmp(curToken->lexeme, "EOF") == 0){
+            break;
+        }
+        Node* topNode = top(stack);
+        // printf("Cur token is : %s and lexeme is %s\n", getTokenString(curToken->token), curToken->lexeme);
+        if(topNode->isLeafNode){
+            if(isEqual(topNode->nodeSymbol, curToken->token)){
+                assignLexeme(topNode, curToken);
+                // printf("Matched %s to %s\n", topNode->lexeme, curToken->lexeme);
+                pop(stack); // we match
+                curToken = getNextToken(tb);
+            }else{
+                // handle non matching terminal error.
+                errorHandler(G, stack, curToken, tb);
+                return NULL;
+            }
+        }else{
+            grammarSymbol terminal = curToken->token;
+            grammarSymbol nonterminal = topNode->nodeSymbol;
+            // get rule from table
+            if(G->parseTableRuleLen[nonterminal][terminal] > 0){
+                // there is a valid rule to parse this
+                // pop the stack
+                pop(stack);
+                // push the rhs to stack in reverse order
+                // also create the nodes for them while doing so
+                for(int i = G->parseTableRuleLen[nonterminal][terminal] - 1; i >= 0; i--){
+                    grammarSymbol curSymb = G->parseTable[nonterminal][terminal][i];
+                    // if(curSymb == EPSILON)continue;
+                    bool isLeaf = (isTerminal(curSymb));
+                    Node* curSymbNode = initNode(
+                        NULL,
+                        NULL,
+                        curSymb,
+                        nonterminal,
+                        isTerminal(curSymb)
+                    );
+                    topNode->children[i] = curSymbNode;
+                    topNode->numChildren++;
+                    if(curSymb != EPSILON)
+                        push(stack, curSymbNode);
+                }
+            }else{
+                // top of stack is non terminal who has either PARSER_ERROR or SYN
+                if(G->parseTable[nonterminal][terminal][0] == PARSER_ERROR){
+                    errorHandler(G, stack, curToken, tb);
+                    return NULL;
+                }else if(G->parseTable[nonterminal][terminal][0] == SYN){
+                    errorHandler(G, stack, curToken, tb);
+                    return NULL;
+                }else{
+                    perror("Something other than parser error and syn encountered in parseTable : %d");
+                    printf("Found %d : ", G->parseTable[nonterminal][terminal]);
+                    exit(1);
+                }
+            }
+        }
+    }
+
+    // return root.
+    return startNode;
+}
 
 grammarSymbol getTokenEnum(const char *str)
 {
@@ -669,6 +821,8 @@ grammarSymbol getTokenEnum(const char *str)
     }
     else if(strcmp(str, "PARSER_ERROR")==0){
         return PARSER_ERROR;
+    }else if(strcmp(str, "SYN") == 0){
+        return SYN;
     }
     printf("ERROR: Unrecognized token '%s'\n", str);
     exit(1);
@@ -1015,5 +1169,7 @@ const char* getTokenString(grammarSymbol sym)
     }
     else if(sym == NT_A){
         return "NT_A";
+    }else if(sym == SYN){
+        return "SYN";
     }
 }

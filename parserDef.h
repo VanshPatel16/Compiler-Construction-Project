@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#define NUMTOKENS 60
+#define NUMTOKENS 61
 #define NUMRULES 114
 #define NUMSYMBOLS 114
 #define MAXSTACKSIZE 1024
@@ -68,6 +68,7 @@ typedef enum {
     EPSILON,
     DOLLAR,
     PARSER_ERROR,
+    SYN,
     NT_PROGRAM,
     NT_OTHER_FUNCTIONS,
     NT_MAIN_FUNCTION,
@@ -121,7 +122,6 @@ typedef enum {
     NT_MORE_IDS,
     NT_DEFINETYPESTMT,
     NT_A,
-    SYN,
 } grammarSymbol;
 
 typedef struct productionRule{
@@ -149,11 +149,10 @@ typedef struct Node{
     char* numValue;
     grammarSymbol parentSymbol;
     grammarSymbol nodeSymbol;
+    int lineNo;
 
-    // we access tokenName only if its a leaf.
-    Node* children[MAXTLEN]; 
+    struct Node* children[MAXTLEN]; 
     int numChildren;
-    grammarSymbol tokenName;
     bool isLeafNode;
 
 }Node;
