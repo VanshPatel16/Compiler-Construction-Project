@@ -10,3 +10,8 @@ void removeWhiteSpaces(char* buffer);
 const char* getTokenString(grammarSymbol sym);
 grammarSymbol getTokenEnum(const char *str);
 void populateParseTable(Grammar* G);
+void push(Stack* s, grammarSymbol g);
+grammarSymbol pop(Stack* s);
+grammarSymbol top(Stack* s);
+void initStack(Stack* s);
+Node* initNode(char* lexeme, char* numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode, grammarSymbol tokenName);

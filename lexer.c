@@ -634,7 +634,7 @@ TokenInfo* createToken(Token token, char* lexeme, int lineNo){
     int lengthRead = strlen(lexeme);
     tk->lexeme = (char*)malloc(lengthRead * sizeof(char));
     tk->token = token;
-    strcpy(tk->lexeme, lexeme); // need to check if this works!!!
+    strcpy(tk->lexeme, lexeme); 
     tk->lineNo = lineNo;
     fflush(stdout);
     return tk;

@@ -72,9 +72,7 @@ void calculateFollowSets(Grammar* G){
         }
     }
 }
-// A -> alpha BCdE
 bool getFollow(grammarSymbol x, Grammar* G){
-    // x -> alpha
     if(isTerminal(x)){
         return false;
     }
@@ -103,7 +101,6 @@ bool getFollow(grammarSymbol x, Grammar* G){
     }
     return changed;
 }
-// A -> alpha B C D.
 void removeWhiteSpaces(char* buffer){
     int count = 0;
 
@@ -196,17 +193,12 @@ Grammar* constructGrammar(char* inputFile){
 //     return firstSet;
 // }
 
-bool* getFirstSentential(grammarSymbol* sententialForm,
-                         int tlen,
-                         Grammar* G,
-                         bool* allEps)
-{
+bool* getFirstSentential(grammarSymbol* sententialForm,int tlen,Grammar* G,bool* allEps){
     bool* firstSet = (bool*)calloc(NUMTOKENS, sizeof(bool));
 
     *allEps = true;
 
-    for(int symbol = 0; symbol < tlen; symbol++)
-    {
+    for(int symbol = 0; symbol < tlen; symbol++){
         grammarSymbol g = sententialForm[symbol];
 
         unite(firstSet, G->first[g]);
@@ -268,6 +260,7 @@ void populateParseTable(Grammar* G)
 {
     for(int i = 0; i < NUMSYMBOLS; i++){
         for(int j = 0; j < NUMTOKENS; j++){
+            G->parseTableRuleLen[i][j] = 0; // change 1
             for(int k = 0; k < MAXTLEN; k++){
                 G->parseTable[i][j][k] = PARSER_ERROR;
             }
@@ -278,33 +271,59 @@ void populateParseTable(Grammar* G)
         if(isTerminal(LHS)) continue;
 
         for(int rule = 0; rule < G->rules[LHS].rlen; rule++){
-            int tlen = G->rules[LHS].tlen[rule];
+            int currulelen = G->rules[LHS].tlen[rule];
 
             bool allEps = false;
 
-            bool* firstSet = getFirstSentential(G->rules[LHS].RHS[rule],tlen,G,&allEps);
+            bool* firstSet = getFirstSentential(G->rules[LHS].RHS[rule],currulelen,G,&allEps);
 
             for(int terminal = 0; terminal < NUMTOKENS; terminal++){
                 if(firstSet[terminal]){
-                    for(int k = 0; k < tlen; k++){
+                    for(int k = 0; k < currulelen; k++){
                         G->parseTable[LHS][terminal][k] = G->rules[LHS].RHS[rule][k];
                     }
+                    G->parseTableRuleLen[LHS][terminal] = currulelen;
                 }
             }
 
             if(allEps){
                 for(int terminal = 0; terminal < NUMTOKENS; terminal++){
                     if(G->follow[LHS][terminal]){
-                        for(int k = 0; k < tlen; k++){
+                        for(int k = 0; k < currulelen; k++){
                             G->parseTable[LHS][terminal][k] =
                                 G->rules[LHS].RHS[rule][k];
                         }
+                        G->parseTableRuleLen[LHS][terminal] = currulelen;
                     }
                 }
             }
             free(firstSet);
         }
     }
+}
+
+// void initStack(Stack* s){
+//     s->currentSize=0;
+// }
+
+Node* initNode(char* lexeme, char* numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode, grammarSymbol tokenName){
+    Node* curNode = (Node*)malloc(sizeof(Node));
+    int lexlengthRead = strlen(lexeme);
+    curNode->lexeme = (char*)malloc(sizeof(char) * lexlengthRead);
+    strcpy(curNode->lexeme, lexeme);
+    int numlengthRead = strlen(numValue);
+    curNode->numValue = (char*)malloc(sizeof(char)* numlengthRead);
+    strcpy(curNode->numValue, numValue);
+
+    curNode->nodeSymbol = nodeSymbol;
+    curNode->parentSymbol = parentSymbol;
+    curNode->isLeafNode = isLeafNode;
+    if(curNode->isLeafNode){
+        curNode->tokenName = tokenName;
+    }
+    curNode->numChildren = 0;
+    // handle the children addition in another function. 
+    return curNode;
 }
 
 
@@ -648,6 +667,9 @@ grammarSymbol getTokenEnum(const char *str)
     else if(strcmp(str, "NT_A") == 0){
         return NT_A;
     }
+    else if(strcmp(str, "PARSER_ERROR")==0){
+        return PARSER_ERROR;
+    }
     printf("ERROR: Unrecognized token '%s'\n", str);
     exit(1);
 
@@ -684,6 +706,9 @@ const char* getTokenString(grammarSymbol sym)
     }
     else if(sym == TK_PARAMETERS){
         return "TK_PARAMETERS";
+    }
+    else if(sym == PARSER_ERROR){
+        return "PARSER_ERROR";
     }
     else if(sym == TK_END){
         return "TK_END";

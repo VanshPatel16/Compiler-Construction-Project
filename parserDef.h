@@ -3,9 +3,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#define NUMTOKENS 59
-#define NUMRULES 112
-#define NUMSYMBOLS 112
+#define NUMTOKENS 60
+#define NUMRULES 114
+#define NUMSYMBOLS 114
+#define MAXSTACKSIZE 1024
 typedef enum {
     TK_ASSIGNOP, 
     TK_COMMENT, 
@@ -66,6 +67,7 @@ typedef enum {
     TK_NE,
     EPSILON,
     DOLLAR,
+    PARSER_ERROR,
     NT_PROGRAM,
     NT_OTHER_FUNCTIONS,
     NT_MAIN_FUNCTION,
@@ -119,7 +121,7 @@ typedef enum {
     NT_MORE_IDS,
     NT_DEFINETYPESTMT,
     NT_A,
-    PARSER_ERROR,
+    SYN,
 } grammarSymbol;
 
 typedef struct productionRule{
@@ -135,12 +137,31 @@ typedef struct productionRule{
 typedef struct Grammar{
     productionRule rules[NUMRULES];
     grammarSymbol parseTable[NUMSYMBOLS][NUMTOKENS][MAXTLEN];
+    int parseTableRuleLen[NUMSYMBOLS][NUMTOKENS];
     bool first[NUMSYMBOLS][NUMTOKENS];
     bool follow[NUMSYMBOLS][NUMTOKENS];
     bool hasEPSILONFirst[NUMSYMBOLS];
     bool isFirstComputed[NUMSYMBOLS];
 }Grammar;
 
+typedef struct Node{
+    char* lexeme;
+    char* numValue;
+    grammarSymbol parentSymbol;
+    grammarSymbol nodeSymbol;
+
+    // we access tokenName only if its a leaf.
+    Node* children[MAXTLEN]; 
+    int numChildren;
+    grammarSymbol tokenName;
+    bool isLeafNode;
+
+}Node;
+
+typedef struct stack{
+    Node* arr[MAXSTACKSIZE];
+    int currentSize;
+} Stack;
 
 
 
