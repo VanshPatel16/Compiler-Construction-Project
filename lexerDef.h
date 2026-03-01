@@ -75,6 +75,7 @@ typedef struct tokeninfo{
     Token token;
     char* lexeme;
     int lineNo;
+    double numValue;
 } TokenInfo;
 
 typedef struct twinbuffer{

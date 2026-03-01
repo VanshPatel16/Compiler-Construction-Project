@@ -14,5 +14,5 @@ void push(Stack* stack, Node* curNode);
 Node* pop(Stack* stack);
 Node* top(Stack* stack);
 Stack* initStack();
-Node* initNode(char* lexeme, char* numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode);
+Node* initNode(char* lexeme, double numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode);
 Node* constructParseTree(Grammar* G, const char* inputFileName);

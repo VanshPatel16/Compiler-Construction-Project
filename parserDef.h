@@ -146,7 +146,7 @@ typedef struct Grammar{
 
 typedef struct Node{
     char* lexeme;
-    char* numValue;
+    double numValue;
     grammarSymbol parentSymbol;
     grammarSymbol nodeSymbol;
     int lineNo;
