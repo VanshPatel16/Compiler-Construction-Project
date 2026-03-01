@@ -683,6 +683,12 @@ The entire implemenation of the Lexer boils down to this function.
             Instead we recursively call the same function again to eat the input until we can obtain a valid token.
 - NOTE :    We DO tokenize the comments, but we DO NOT retain the lexeme for the comments, instead we only return '%' as the lexeme.
 
+- Implementation Details : We determine what branch to take first with the help of the first character and then ask the functions to 
+                            run the DFA and fill the lexeme.
+                            We do not tokenize white spaces, we just consume them, we return a NULL pointer on encountering them.
+                            We tokenize the comments and manipulate the line numbers using new line characters.
+                            We make sure to recurse if the token encountered is a comment and only return if the token is a valid terminal. 
+
 */
 TokenInfo* getNextToken(TwinBuffer* tb){
     Token token;
@@ -755,7 +761,9 @@ TokenInfo* getNextToken(TwinBuffer* tb){
     }
     return curToken;
 }
-
+/*
+This is the function to remove the comments from the input file as asked by the problem statements.
+*/
 void removeComments(const char* testcaseFile){
     
     FILE* fpInput = fopen(testcaseFile, "r");

@@ -1,14 +1,18 @@
 #include "parser.h"
 #include "lexer.h"
 
+
+// Checks if a given grammar symbol is a terminal or not
 bool isTerminal(grammarSymbol g){
     return g < NUMTOKENS;
 }
+
+// Checks if a given grammar terminal matches with a valid lexer token.
 bool isEqual(grammarSymbol g, Token t){
     return (g == t);
 }
 
-// Populates grammar with first sets for each non-terminal
+// Populates grammar with first sets for each non-terminal using the getFirst() function
 void calculateFirstSets(Grammar* G){
     for(int symbol = 0; symbol < NUMSYMBOLS; symbol++){
         getFirst((grammarSymbol)symbol, G);
@@ -16,7 +20,7 @@ void calculateFirstSets(Grammar* G){
     return;
 }
 
-// Return next token keeping into consideration comment token is not to be parsed
+// Return next token keeping into consideration that comment token is not to be parsed
 TokenInfo* getParserNextToken(TwinBuffer* tb){
     TokenInfo* result = getNextToken(tb);
     if(!result || result->token == TK_COMMENT){
@@ -37,9 +41,12 @@ bool unite(bool* dst, bool* src){
     return modified;
 }
 
-// Computes first set for a given non terminal 
+/* 
+Computes first set for a given non terminal 
+*/
 void getFirst(grammarSymbol X, Grammar* G){
     if(isTerminal(X)){
+        // If a grammar symbol is a terminal then its first set contains only itself except if it is epsilon
         if(X != EPSILON){
             G->first[X][X] = true;
         }else{
@@ -48,12 +55,14 @@ void getFirst(grammarSymbol X, Grammar* G){
         G->isFirstComputed[X] = true;
         return;
     }
+    // Memoization : If first set has already been computed then return
     if(G->isFirstComputed[X]){
         return;
     }
-    G->hasEPSILONFirst[X] |= G->rules[X].hasEPSILON; // if A has epsilon transition, then it has first in its epsilon.
+    G->hasEPSILONFirst[X] |= G->rules[X].hasEPSILON; // if A has epsilon transition, then it has epsilon in its first set.
     for(int rule = 0; rule < G->rules[X].rlen; rule++){
-        bool allEPS = true;
+        bool allEPS = true; // flag that marks if all the symbols in the RHS have epsilon in their first, because that would lead to epsilon
+        // being in X's first set
         for(int symbol = 0;symbol < G->rules[X].tlen[rule]; symbol++){
             grammarSymbol g = G->rules[X].RHS[rule][symbol];
             if(g == EPSILON){
@@ -63,6 +72,7 @@ void getFirst(grammarSymbol X, Grammar* G){
                 allEPS = false;
                 break;
             }else{
+                // if the first symbol on the RHS is a Non terminal, we first ask it to compute its first set, and then only we proceed.
                 getFirst(g, G);
                 unite(G->first[X], G->first[g]);
                 G->first[X][EPSILON] = false;
@@ -75,25 +85,25 @@ void getFirst(grammarSymbol X, Grammar* G){
         if(allEPS)
             G->hasEPSILONFirst[X] = true;
     }
-    G->isFirstComputed[X] = true;
+    G->isFirstComputed[X] = true; // for memoization purposes.
     return;
 }
 
-// Computes follow set for each of the non terminals.
+// Computes follow set for each of the non terminals using the getFollow() function
 void calculateFollowSets(Grammar* G){
     G->follow[NT_PROGRAM][DOLLAR] = true;
     bool changed = true;
-    while(changed){
+    while(changed){ // Flag to stop follow set computation if no set changed during last interation.
         changed = false;
         for(int symbol = 0; symbol < NUMSYMBOLS; symbol++){
-            changed |= getFollow(symbol, G);
+            changed |= getFollow(symbol, G); // The getFollow() function returns True if the follow of 'symbol' has changed.
         }
     }
 }
 
-// Computes follow set for a given non terminal
+// Computes follow set for a given non terminal x
 bool getFollow(grammarSymbol x, Grammar* G){
-    if(isTerminal(x)){
+    if(isTerminal(x)){ // we do not do follow set computation for terminals.
         return false;
     }
     bool changed = false;
@@ -110,6 +120,8 @@ bool getFollow(grammarSymbol x, Grammar* G){
                 changed |= unite(G->follow[B], G->first[nxt]);
 
                 if(!G->hasEPSILONFirst[nxt]){
+                    // if every grammar symbol 'next' to the right of 'symbol' in this 'rule' has epsilon in its first set, we'll have to unite
+                    // the follow set of 'x' to follow set of 'symbol'.
                     nexteps = false;
                     break;
                 }
@@ -137,7 +149,7 @@ void removeWhiteSpaces(char* buffer){
     return;
 }
 
-// Populates production rules for the grammar
+// Populates production rules for the grammar by reading the 'input file'
 Grammar* constructGrammar(char* inputFile){
     Grammar* grammar = (Grammar*) malloc(sizeof(Grammar));
     memset(grammar, 0, sizeof(Grammar));
@@ -223,7 +235,7 @@ bool* getFirstSentential(grammarSymbol* sententialForm,int tlen,Grammar* G,bool*
     return firstSet;
 }
 
-// Function to add sync tags in the parser table for the given terminals.
+// Function to add sync tags in the parse table for the given terminals to help improve error handling.
 bool heuristicSync(int terminal){
 
     return (terminal == TK_SEM || terminal == TK_ENDIF || terminal == TK_ELSE || 
@@ -232,17 +244,19 @@ bool heuristicSync(int terminal){
     terminal == TK_END);
 }
 
-// Populates the parser table for the given grammar
+// Populates the parse table for the given grammar
+// indexed by parseTable[nonTerminal][terminal] and it holds the appropriate rule.
 void populateParseTable(Grammar* G){
+    // initialize the parse table by PARSER_ERROR
     for(int i=0; i<NUMSYMBOLS; i++){
         for(int j=0; j<NUMTOKENS; j++){
-            G->parseTableRuleLen[i][j] = 0; // change 1
+            G->parseTableRuleLen[i][j] = 0;
             for(int k=0; k<MAXTLEN; k++){
                 G->parseTable[i][j][k] = PARSER_ERROR;
             }
         }
     }
-
+    // We implement the algorithm from the slides for parse table construction
     for(int LHS=0; LHS<NUMSYMBOLS; LHS++){
         if(isTerminal(LHS)){
             continue;
@@ -324,8 +338,7 @@ bool isEmpty(Stack* stack){
 
 // Parse Tree implementation
 
-
-// Function initializes node for the parse tree
+// Function initializes node for the parse tree by assigning dynamic memory safely.
 Node* initNode(char* lexeme, double numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode){
     Node* curNode = (Node*)malloc(sizeof(Node));
     memset(curNode, 0, sizeof(Node));
@@ -361,6 +374,7 @@ TokenInfo* errorHandler(Grammar* G, Stack* stack, TokenInfo* curToken, TwinBuffe
     }
     Node* topNode = top(stack);
     if(topNode->isLeafNode){
+        // Terminal stack symbol does not match with the input symbol
         printf("Line %d Error : The token %s for lexeme %s does not match with the expected token %s\n",
             curToken->lineNo,
             getTokenString(curToken->token),
@@ -371,20 +385,27 @@ TokenInfo* errorHandler(Grammar* G, Stack* stack, TokenInfo* curToken, TwinBuffe
         grammarSymbol nonTerminal = topNode->nodeSymbol;
         grammarSymbol terminal = curToken->token;
         if(G->parseTable[nonTerminal][terminal][0] == PARSER_ERROR){
+            // The non terminal stack top is not compatible with the input symbol
+            // We have reached an Error state while parsing
             printf("Line %d Error: Invalid token %s encountered with value %s stack top %s\n",
                 curToken->lineNo,
                 getTokenString(curToken->token),
                 curToken->lexeme,
                 getTokenString(topNode->nodeSymbol));
-            curToken = getParserNextToken(tb);
+            // We need to skip this input token 
+                        curToken = getParserNextToken(tb);
         }else if(G->parseTable[nonTerminal][terminal][0] == SYN){
+            // The non terminal present just below the stack top is compatible with the input symbol
+            // We have reached a synchronization state while parsing
             printf("Line %d Error: Invalid token %s encountered with value %s stack top %s\n",
                 curToken->lineNo,
                 getTokenString(curToken->token),
                 curToken->lexeme,
                 getTokenString(topNode->nodeSymbol));
+            // We need to pop the top stack symbol               
             pop(stack);
         }else{
+            // Error thrown if an impossible state has been reached while parsing
             perror("Impossible\n");
             exit(1);
             return NULL;
@@ -408,6 +429,7 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
     while(true){
 
         if(curToken == NULL){
+            // happens in the case of a whitespace (' ', '\t', '\n', etc.)
             curToken = getParserNextToken(tb);
             continue;
         }
@@ -415,13 +437,14 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
             break;
         }
         if(isEmpty(stack)){
+            // required check during erroneous parsing
             break;
         }
         Node* topNode = top(stack);
         if(topNode->isLeafNode){
             if(isEqual(topNode->nodeSymbol, curToken->token)){
                 assignLexeme(topNode, curToken);
-                pop(stack); // we match
+                pop(stack); // we consume the terminal in input
                 curToken = getParserNextToken(tb);
             }else{
                 // handle non matching terminal error.
@@ -448,6 +471,7 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
                         nonterminal,
                         isTerminal(curSymb)
                     );
+                    // link them to their parent.
                     topNode->children[i] = curSymbNode;
                     topNode->numChildren++;
                     if(curSymb != EPSILON){
@@ -455,7 +479,7 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
                     }
                 }
             }else{
-                // top of stack is non terminal who has either PARSER_ERROR or SYN
+                // top of stack is non terminal who has either ERROR or SYNC
                 if(G->parseTable[nonterminal][terminal][0] == PARSER_ERROR){
                     hasError |= true;
                     curToken = errorHandler(G, stack, curToken, tb);
@@ -523,7 +547,7 @@ void printParseTree(Node* root, Node* parent, FILE* fp){
     }
 }
 
-// Helper function to convert given string to corresponding enum
+// Helper function to convert given grammarSymbol string to corresponding enum
 grammarSymbol getTokenEnum(const char *str)
 {
     if(strcmp(str, "TK_ASSIGNOP") == 0){

@@ -79,10 +79,10 @@ typedef struct tokeninfo{
 } TokenInfo;
 
 typedef struct twinbuffer{
-    char buffer[TBSIZE];
+    char buffer[TBSIZE]; // this constitutes the twin buffer, which holds both of our buffer size by side.
     int tbStart; // points to the start of the next half of the buffer
     int basePtr; // points to the start of the current lexeme.
     int forwardPtr; // points to the start of the next lexeme.
-    FILE* fp;
+    FILE* fp; // holds the file pointer to the input stream
     bool isLastChunk;
 }TwinBuffer;
