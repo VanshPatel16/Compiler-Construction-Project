@@ -135,11 +135,13 @@ void printParseTree(Node* root, Node* parent, FILE* fp){
         return;
     }
     if(root->isLeafNode){
-        // fprintf(fp, "Parent %s | Leaf Symbol : %s | Lexeme : %s%c", getTokenString(parent->nodeSymbol), getTokenString(root->nodeSymbol), root->lexeme, (root->lineNo == prevLineNo ? ' ' : '\n'));
         if(root->nodeSymbol == EPSILON)
             return;
-        // fprintf(fp, "%s%c", root->lexeme, (root->lineNo == prevLineNo ? ' ' : '\n'));
-        fprintf(fp, "%s\n", root->lexeme);
+        if(root->nodeSymbol == TK_NUM || root->nodeSymbol == TK_RNUM){
+            fprintf(fp, "%lf\n", root->numValue);
+        }else{
+            fprintf(fp, "%s\n", root->lexeme);
+        }
         return;
     }
     // printParseTree(root->children[0], root, fp);

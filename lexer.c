@@ -629,13 +629,14 @@ void retract(TwinBuffer* tb){
     tb->forwardPtr = (tb->forwardPtr - 1 + TBSIZE) % TBSIZE;
 }
 
-TokenInfo* createToken(Token token, char* lexeme, int lineNo){
+TokenInfo* createToken(Token token, char* lexeme, int lineNo, double numValue){
     TokenInfo* tk = (TokenInfo*)malloc(sizeof(TokenInfo));
     int lengthRead = strlen(lexeme) + 1;
     tk->lexeme = (char*)malloc(lengthRead * sizeof(char));
     tk->token = token;
     strcpy(tk->lexeme, lexeme); // need to check if this works!!!
     tk->lineNo = lineNo;
+    tk->numValue = numValue;
     fflush(stdout);
     return tk;
 }
@@ -646,8 +647,9 @@ TokenInfo* getNextToken(TwinBuffer* tb){
     memset(lexeme, '\0', sizeof(char) * BUFFSIZE);
     int tkLineNo = -1;
     char c = getNextChar(tb);
+    double numValue = 0;
     if(c == EOF){
-        return createToken(-1, "EOF", lineNo);
+        return createToken(-1, "EOF", lineNo, numValue);
     }
     lexeme[0] = c;
     bool isCmt = false;
@@ -659,6 +661,7 @@ TokenInfo* getNextToken(TwinBuffer* tb){
         retract(tb);
     }else if(isNumber(c)){
         token = tokenizeNumber(lexeme, tb);
+        numValue = strtod(lexeme, NULL);
         retract(tb);
     }else if(isLogicalOp(c)){
         token = tokenizeLogicalOp(lexeme, tb);
@@ -686,7 +689,7 @@ TokenInfo* getNextToken(TwinBuffer* tb){
     if(!isCmt)
         tkLineNo = lineNo;
     
-    TokenInfo* curToken = createToken(token, lexeme, tkLineNo); 
+    TokenInfo* curToken = createToken(token, lexeme, tkLineNo, numValue); 
     if(curToken->token == LEX_TK_ERRPATTERN){
         printf("Line no %d : Error: Unknown pattern <%s>\n", curToken->lineNo,curToken->lexeme);
         return getNextToken(tb);
