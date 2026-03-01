@@ -308,85 +308,6 @@ Node* initNode(char* lexeme, double numValue, grammarSymbol nodeSymbol, grammarS
     return curNode;
 }
 
-void errorHandler(Grammar* G, Stack* stack, TokenInfo* curToken, TwinBuffer* tb){
-    // printf("Entered errror handler\n");
-    while(true){
-        if(curToken == NULL){
-            curToken = getNextToken(tb);
-            continue;
-        }
-        if(strcmp(curToken->lexeme, "EOF") == 0){
-            return;
-        }
-        if(isEmpty(stack)){
-            printf("Stack got over but input is left.\n");
-            return;
-        }
-        Node* topNode = top(stack);
-        if(topNode->isLeafNode){
-            pop(stack);
-            if(isEqual(topNode->nodeSymbol, curToken->token)){
-                // consume without errors.
-                assignLexeme(topNode, curToken);
-            }else{
-                // non equal terminals
-                printf("Syntax error on line %d expected token %s but found %s\n", curToken->lineNo, getTokenString(topNode->nodeSymbol), getTokenString(curToken->token));
-                continue; // as we dont want next token
-            }
-        }else{
-            grammarSymbol nonterminal = topNode->nodeSymbol;
-            grammarSymbol terminal = curToken->token;
-            if(G->parseTableRuleLen[nonterminal][terminal] > 0){
-                // parsing logic
-                // there is a valid rule to parse this
-                // pop the stack
-                pop(stack);
-                // push the rhs to stack in reverse order
-                // also create the nodes for them while doing so
-                for(int i = G->parseTableRuleLen[nonterminal][terminal] - 1; i >= 0; i--){
-                    grammarSymbol curSymb = G->parseTable[nonterminal][terminal][i];
-                    Node* curSymbNode = initNode(
-                        NULL,
-                        0,
-                        curSymb,
-                        nonterminal,
-                        isTerminal(curSymb)
-                    );
-                    topNode->children[i] = curSymbNode;
-                    topNode->numChildren++;
-                    if(curSymb != EPSILON)
-                        push(stack, curSymbNode);
-                }
-                continue;
-            }else{
-                if(G->parseTable[nonterminal][terminal][0] == PARSER_ERROR){
-                    printf("Line no : %d : Syntax Error. The current token : %s for lexeme : %s does not exist. Expected a construct for %s.\n", 
-                        curToken->lineNo,
-                        getTokenString(curToken->token),
-                        curToken->lexeme,
-                        getTokenString(topNode->nodeSymbol)
-                    );
-                }else if(G->parseTable[nonterminal][terminal][0] == SYN){
-                    printf("Line no : %d : Syntax Error. The construct : %s is missing. Synchronized on token %s.\n", 
-                        curToken->lineNo,
-                        getTokenString(topNode->nodeSymbol),
-                        curToken->lexeme
-                    );
-                    pop(stack);
-                    continue;
-                }else{
-                    perror("Unknown entry in parse table");
-                    exit(1);
-                }
-            }
-        }
-        curToken = getNextToken(tb);
-    }
-
-    printf("Error handling complete\n");
-    return;
-}
-
 void assignLexeme(Node* topNode, TokenInfo* curToken){
     int lexreadLength = strlen(curToken->lexeme) + 1;
     topNode->lexeme = (char*)malloc(sizeof(char) * lexreadLength);
@@ -395,6 +316,34 @@ void assignLexeme(Node* topNode, TokenInfo* curToken){
     topNode->lineNo = curToken->lineNo;
     return;
 }
+
+TokenInfo* errorHandler(Grammar* G, Stack* stack, TokenInfo* curToken, TwinBuffer* tb){
+    if(isEmpty(stack)){
+        return NULL;
+    }
+    Node* topNode = top(stack);
+    if(topNode->isLeafNode){
+        printf("%s and %s dont match\n", getTokenString(topNode->nodeSymbol), curToken->lexeme);
+        pop(stack);
+    }else{
+        grammarSymbol nonTerminal = topNode->nodeSymbol;
+        grammarSymbol terminal = curToken->token;
+        if(G->parseTable[nonTerminal][terminal][0] == PARSER_ERROR){
+            printf("Could not parse %s with %s. Getting new token\n", curToken->lexeme, getTokenString(topNode->nodeSymbol));
+            curToken = getNextToken(tb);
+            return curToken;
+        }else if(G->parseTable[nonTerminal][terminal][0] == SYN){
+            printf("Could not synchronized %s with %s. Popping stack.\n", getTokenString(topNode->nodeSymbol), curToken->lexeme);
+            pop(stack);
+        }else{
+            perror("Impossible\n");
+            exit(1);
+            return NULL;
+        }
+    }
+    return curToken;
+}
+
 
 Node* constructParseTree(Grammar* G, const char* inputFileName){
     // create stack and twin buffer
@@ -415,18 +364,18 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
         if(strcmp(curToken->lexeme, "EOF") == 0){
             break;
         }
+        if(isEmpty(stack)){
+            break;
+        }
         Node* topNode = top(stack);
-        // printf("Cur token is : %s and lexeme is %s\n", getTokenString(curToken->token), curToken->lexeme);
         if(topNode->isLeafNode){
             if(isEqual(topNode->nodeSymbol, curToken->token)){
                 assignLexeme(topNode, curToken);
-                // printf("Matched %s to %s\n", topNode->lexeme, curToken->lexeme);
                 pop(stack); // we match
                 curToken = getNextToken(tb);
             }else{
                 // handle non matching terminal error.
-                errorHandler(G, stack, curToken, tb);
-                return startNode;
+                curToken = errorHandler(G, stack, curToken, tb);
             }
         }else{
             grammarSymbol terminal = curToken->token;
@@ -457,11 +406,9 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
             }else{
                 // top of stack is non terminal who has either PARSER_ERROR or SYN
                 if(G->parseTable[nonterminal][terminal][0] == PARSER_ERROR){
-                    errorHandler(G, stack, curToken, tb);
-                    return startNode;
+                    curToken = errorHandler(G, stack, curToken, tb);
                 }else if(G->parseTable[nonterminal][terminal][0] == SYN){
-                    errorHandler(G, stack, curToken, tb);
-                    return startNode;
+                    curToken = errorHandler(G, stack, curToken, tb);
                 }else{
                     perror("Something other than parser error and syn encountered in parseTable : %d");
                     printf("Found %d : ", G->parseTable[nonterminal][terminal]);
