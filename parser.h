@@ -16,3 +16,4 @@ Node* top(Stack* stack);
 Stack* initStack();
 Node* initNode(char* lexeme, double numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode);
 Node* constructParseTree(Grammar* G, const char* inputFileName);
+void printParseTree(Node* root, Node* parent, FILE* fp);

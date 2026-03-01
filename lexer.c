@@ -713,10 +713,9 @@ TokenInfo* getNextToken(TwinBuffer* tb){
     return curToken;
 }
 
-void removeComments(const char* testcaseFile, const char* cleanFile){
+void removeComments(const char* testcaseFile){
     
     FILE* fpInput = fopen(testcaseFile, "r");
-    FILE* fpOutput = fopen(cleanFile, "w");
 
     int ch;
     bool commentActive = false;
@@ -728,15 +727,9 @@ void removeComments(const char* testcaseFile, const char* cleanFile){
             commentActive = true;
             continue;
         }
-        int isEOF = fputc(ch, fpOutput);
-        if(isEOF == EOF){
-            perror("Detected EOF when writing!\n");
-            exit(1);
-        }
+        putchar(ch);
     }
 
     fclose(fpInput);
-    fclose(fpOutput);
-
     return;
 }
