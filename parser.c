@@ -479,6 +479,30 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
     return startNode;
 }
 
+void printParseTree(Node* root, Node* parent, FILE* fp){
+    if(!root){
+        fprintf(fp, "called by %s\n", getTokenString(parent->nodeSymbol));
+        fprintf(fp, "Root is null\n");
+        return;
+    }
+    if(root->isLeafNode){
+        // fprintf(fp, "Parent %s | Leaf Symbol : %s | Lexeme : %s%c", getTokenString(parent->nodeSymbol), getTokenString(root->nodeSymbol), root->lexeme, (root->lineNo == prevLineNo ? ' ' : '\n'));
+        if(root->nodeSymbol == EPSILON)
+            return;
+        // fprintf(fp, "%s%c", root->lexeme, (root->lineNo == prevLineNo ? ' ' : '\n'));
+        fprintf(fp, "%s\n", root->lexeme);
+        return;
+    }
+    // printParseTree(root->children[0], root, fp);
+
+    // fprintf(fp, "Parent %s | Symbol : %s\n\n", getTokenString(parent->nodeSymbol), getTokenString(root->nodeSymbol));
+    for(int i = 0;i < root->numChildren;i++){
+        int t = root->lineNo;
+        printParseTree(root->children[i], root, fp);
+    }
+    return;
+}
+
 grammarSymbol getTokenEnum(const char *str)
 {
     if(strcmp(str, "TK_ASSIGNOP") == 0){
