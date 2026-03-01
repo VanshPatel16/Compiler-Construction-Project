@@ -1,11 +1,6 @@
-#include <stdio.h>
-#include "lexer.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "parser.h"
-#include <stdio.h>
 #include <time.h>
+#include "lexer.h"
+#include "parser.h"
 
 int main(int argc, char* argv[]){
     if (argc < 3) {
@@ -16,14 +11,18 @@ int main(int argc, char* argv[]){
     char * ipFile = argv[1];
     char * opFile = argv[2];
     char * ruleFile = "rules.txt";
+    printf("Testcase file : %s\n", argv[1]);
+    printf("Output file : %s\n", argv[2]);
     while(true){
         int op;
-        scanf("%d", op);
+        scanf("%d", &op);
         if(op==0){
             break;
         }
         else if(op==1){
+            printf("Removing comments");
             removeComments(ipFile);
+            printf("\n");
         }
         else if(op==2){
             TwinBuffer* tb = (TwinBuffer*) malloc(sizeof(struct twinbuffer));
@@ -36,7 +35,7 @@ int main(int argc, char* argv[]){
                 if(strcmp(curToken->lexeme, "EOF") == 0){
                     break;
                 }
-                printf("Token: %-15s | Lexeme: %-15s | Line: %-5d\n", tokenToString(curToken->token), curToken->lexeme, curToken->lineNo);
+                printf("Token: %-15s | Lexeme: %-15s | Line: %-5d\n", getTokenString(curToken->token), curToken->lexeme, curToken->lineNo);
             }
             free(tb);
         }
@@ -46,9 +45,13 @@ int main(int argc, char* argv[]){
             calculateFollowSets(G);
             populateParseTable(G);
             Node* root = constructParseTree(G, ipFile);
+            FILE* fp = fopen(opFile, "w");
             if(root!=NULL){
-                printParseTree(root, root, opFile);
+                printf("entered printing parse tree\n");
+                printParseTree(root, root, fp);
+                fflush(fp);
             }
+            
             free(G);
         }
         else if(op==4){

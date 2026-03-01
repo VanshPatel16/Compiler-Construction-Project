@@ -128,34 +128,9 @@ void printParseTable(Grammar* G, const char* outputFile)
     printf("Parse table written to %s\n", outputFile);
 }
 
-void printParseTree(Node* root, Node* parent, FILE* fp){
-    if(!root){
-        fprintf(fp, "called by %s\n", getTokenString(parent->nodeSymbol));
-        fprintf(fp, "Root is null\n");
-        return;
-    }
-    if(root->isLeafNode){
-        if(root->nodeSymbol == EPSILON)
-            return;
-        if(root->nodeSymbol == TK_NUM || root->nodeSymbol == TK_RNUM){
-            fprintf(fp, "%lf\n", root->numValue);
-        }else{
-            fprintf(fp, "%s\n", root->lexeme);
-        }
-        return;
-    }
-    // printParseTree(root->children[0], root, fp);
-
-    // fprintf(fp, "Parent %s | Symbol : %s\n\n", getTokenString(parent->nodeSymbol), getTokenString(root->nodeSymbol));
-    for(int i = 0;i < root->numChildren;i++){
-        int t = root->lineNo;
-        printParseTree(root->children[i], root, fp);
-    }
-    return;
-}
 
 int main(){
-    removeComments("Parser Test Cases/t6.txt", "clean_t6.txt");
+    removeComments("Parser Test Cases/t6.txt");
     printf("Cleaned the comments\n");
     Grammar* grammar = constructGrammar("rules.txt");
     calculateFirstSets(grammar);
@@ -169,8 +144,9 @@ int main(){
     printParseTable(grammar, "parsetable.txt");
     Node* root = constructParseTree(grammar, "clean_t6.txt");
     printf("Parse tree computed\n");
-    // FILE* fp = fopen("parse_tree_output.txt", "w");
-    // printParseTree(root, root, fp);
+    FILE* fp = fopen("parse_tree_output.txt", "w");
+    if(root)
+        printParseTree(root, root, fp);
     // Don't forget to free what you malloc!
     free(grammar); 
     return 0;

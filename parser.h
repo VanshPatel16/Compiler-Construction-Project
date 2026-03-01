@@ -1,6 +1,5 @@
 #include "parserDef.h"
 bool isTerminal(grammarSymbol g);
-// bool fillGrammarTable
 void calculateFirstSets(Grammar* G);
 void getFirst(grammarSymbol x, Grammar* G);
 void calculateFollowSets(Grammar* G);
@@ -17,3 +16,4 @@ Stack* initStack();
 Node* initNode(char* lexeme, double numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode);
 Node* constructParseTree(Grammar* G, const char* inputFileName);
 void printParseTree(Node* root, Node* parent, FILE* fp);
+const char* getTokenString(grammarSymbol sym);

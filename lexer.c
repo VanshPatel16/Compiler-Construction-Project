@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include "lexer.h"
 int lineNo = 1;
+
+// helper functions 
 bool isRelationalOp(char c){
     return (c == '<' || c == '>' || c == '!' || c == '=');
 }
@@ -53,6 +55,7 @@ void handleWhiteSpace(char c){
     }
 }
 
+// Returns Token enum corresponding to input string
 Token getTokenFromLexeme(const char *lexeme) {
 
     if (!strcmp(lexeme, "while")) return LEX_TK_WHILE;
@@ -87,7 +90,7 @@ Token getTokenFromLexeme(const char *lexeme) {
 
     return LEX_TK_FIELDID;
 }
-
+// Handles the DFA branch responsible for tokenizing the Relational operators.
 Token tokenizeRelationalOp(char* lexeme, TwinBuffer* tb){
     enum relopStates{
         Less,
@@ -199,7 +202,9 @@ Token tokenizeRelationalOp(char* lexeme, TwinBuffer* tb){
     exit(1);
     return -1;
 }
-
+/*
+Handles the DFA branch responsible for tokenizing the IDs and Keywords
+It uses the getTokenFromLexeme() function to lookup for keywords.*/
 Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
     enum IdKwrdStates{
         Hash,
@@ -350,7 +355,10 @@ Token tokenizeIDAndKeyword(char* lexeme, TwinBuffer* tb){
     }
 
 }
-
+/*
+Handles the DFA branch responsible for tokenizing the numbers
+The actual calculation for the value of the number is handled after tokenization using strtod() function
+*/
 Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
     enum numStates{
         Dstar,
@@ -450,7 +458,9 @@ Token tokenizeNumber(char* lexeme, TwinBuffer* tb){
     exit(1);
     return -1;
 }
-
+/*
+Handles the DFA branch responsible for tokenizing the logical ops
+*/
 Token tokenizeLogicalOp(char* lexeme, TwinBuffer* tb){
 
     enum logicalopStates{
@@ -525,7 +535,9 @@ Token tokenizeLogicalOp(char* lexeme, TwinBuffer* tb){
     exit(1);
     return -1;
 }
-
+/*
+Handles the DFA branch responsible for tokenizing the delimeters.
+*/
 Token tokenizeDelimeter(char* lexeme, TwinBuffer* tb){
     char c = lexeme[0];
     if(c == '.'){
@@ -541,7 +553,10 @@ Token tokenizeDelimeter(char* lexeme, TwinBuffer* tb){
         exit(1);
     }
 }
-
+/*
+Handles the DFA branch responsible for tokenizing comments, we tokenize the comments but they wont be parsed to the 
+parser. They only exist to verify the lexer.
+*/
 Token tokenizeComment(char* lexeme, TwinBuffer* tb){
     char c = lexeme[0];
     int lexIdx = 1;
@@ -560,7 +575,9 @@ Token tokenizeComment(char* lexeme, TwinBuffer* tb){
     exit(1);
     return -1;
 }
-
+/*
+Handles the DFA branch responsible for tokenizing brackets.
+*/
 Token tokenizeBracket(char* lexeme, TwinBuffer* tb){
     char c = lexeme[0];
     if(c == '('){
@@ -576,7 +593,9 @@ Token tokenizeBracket(char* lexeme, TwinBuffer* tb){
         exit(1);
     }
 }
-
+/*
+Handles the DFA branch responsible for tokenizing the arithmetic ops.
+*/
 Token tokenizeArithmeticOp(char* lexeme, TwinBuffer* tb){
     char c = lexeme[0];
     if(c == '+'){
@@ -592,13 +611,18 @@ Token tokenizeArithmeticOp(char* lexeme, TwinBuffer* tb){
         exit(1);
     }
 }   
-
+/*
+Safely initializes the TwinBuffer, while resetting the lineNumber for repeated testing for our driver.
+*/
 void init(const char* fileName, TwinBuffer* tb){
+    lineNo = 1;
     memset(tb, 0, sizeof(TwinBuffer));
     tb->fp = fopen(fileName, "r");
     getFileStream(tb);
 }
-
+/*
+Safely brings the next chunk of data to the next half of the twin buffer.
+*/
 void getFileStream(TwinBuffer* tb){
     if(tb->isLastChunk){
         perror("$ Reached");
@@ -612,7 +636,10 @@ void getFileStream(TwinBuffer* tb){
     }
     tb->tbStart = (tb->tbStart + BUFFSIZE) % TBSIZE;
 }
-
+/*
+Safely fetches the next character from the buffer, while staying in bounds everytime,
+and also ensuring that no stale data is ever fetched.
+*/
 char getNextChar(TwinBuffer* tb){
     char c = tb->buffer[tb->forwardPtr];
     tb->forwardPtr = (tb->forwardPtr + 1) % TBSIZE;
@@ -621,7 +648,11 @@ char getNextChar(TwinBuffer* tb){
     }
     return c;
 }
-
+/*
+The next two functions handle the pointer movement, retract() function is necessary due to the invariants in DFA 
+implementation, where we read the OTHER character which breaks a lexeme, and then the forwardPtr would point to
+a character after that, to reset our forward pointer to the OTHER character, we need to retract it by one position.
+*/
 void shiftPointers(TwinBuffer* tb){
     tb->basePtr = tb->forwardPtr;
 }
@@ -629,6 +660,10 @@ void retract(TwinBuffer* tb){
     tb->forwardPtr = (tb->forwardPtr - 1 + TBSIZE) % TBSIZE;
 }
 
+/*
+This function allocates memory and safely packages the token, lexeme, line number and the numValue if applicable
+in a TokenInfo struct.
+*/
 TokenInfo* createToken(Token token, char* lexeme, int lineNo, double numValue){
     TokenInfo* tk = (TokenInfo*)malloc(sizeof(TokenInfo));
     int lengthRead = strlen(lexeme) + 1;
@@ -640,7 +675,15 @@ TokenInfo* createToken(Token token, char* lexeme, int lineNo, double numValue){
     fflush(stdout);
     return tk;
 }
+/*
+The entire implemenation of the Lexer boils down to this function.
+- Purpose : Take in the current sate of the Twin Buffer, and return the Next Token while following the DFA.
+            We make sure to ONLY return a valid token, or an EOF token which is used to indicate the end of input stream.
+            If we encounter an error, they're printed to the console/terminal, but we never return them.
+            Instead we recursively call the same function again to eat the input until we can obtain a valid token.
+- NOTE :    We DO tokenize the comments, but we DO NOT retain the lexeme for the comments, instead we only return '%' as the lexeme.
 
+*/
 TokenInfo* getNextToken(TwinBuffer* tb){
     Token token;
     char lexeme[BUFFSIZE];

@@ -7,6 +7,8 @@ bool isTerminal(grammarSymbol g){
 bool isEqual(grammarSymbol g, Token t){
     return (g == t);
 }
+
+// Populates grammar with first sets for each non-terminal
 void calculateFirstSets(Grammar* G){
     for(int symbol = 0; symbol < NUMSYMBOLS; symbol++){
         getFirst((grammarSymbol)symbol, G);
@@ -14,6 +16,16 @@ void calculateFirstSets(Grammar* G){
     return;
 }
 
+// Return next token keeping into consideration comment token is not to be parsed
+TokenInfo* getParserNextToken(TwinBuffer* tb){
+    TokenInfo* result = getNextToken(tb);
+    if(!result || result->token == TK_COMMENT){
+        result = getParserNextToken(tb);
+    }
+    return result;
+}
+
+// Efficiently calculates union of 2 sets
 bool unite(bool* dst, bool* src){
     bool modified = false;
     for(int symbol = 0; symbol < NUMTOKENS; symbol++){
@@ -25,6 +37,7 @@ bool unite(bool* dst, bool* src){
     return modified;
 }
 
+// Computes first set for a given non terminal 
 void getFirst(grammarSymbol X, Grammar* G){
     if(isTerminal(X)){
         if(X != EPSILON){
@@ -66,6 +79,7 @@ void getFirst(grammarSymbol X, Grammar* G){
     return;
 }
 
+// Computes follow set for each of the non terminals.
 void calculateFollowSets(Grammar* G){
     G->follow[NT_PROGRAM][DOLLAR] = true;
     bool changed = true;
@@ -76,6 +90,8 @@ void calculateFollowSets(Grammar* G){
         }
     }
 }
+
+// Computes follow set for a given non terminal
 bool getFollow(grammarSymbol x, Grammar* G){
     if(isTerminal(x)){
         return false;
@@ -105,6 +121,8 @@ bool getFollow(grammarSymbol x, Grammar* G){
     }
     return changed;
 }
+
+// Removes whitespaces from the the given buffer(grammar rule).
 void removeWhiteSpaces(char* buffer){
     int count = 0;
 
@@ -119,6 +137,7 @@ void removeWhiteSpaces(char* buffer){
     return;
 }
 
+// Populates production rules for the grammar
 Grammar* constructGrammar(char* inputFile){
     Grammar* grammar = (Grammar*) malloc(sizeof(Grammar));
     memset(grammar, 0, sizeof(Grammar));
@@ -183,7 +202,7 @@ Grammar* constructGrammar(char* inputFile){
 }
 
 
-
+// Helper function for populate parse table, calculates the first set for a given sentential form
 bool* getFirstSentential(grammarSymbol* sententialForm,int tlen,Grammar* G,bool* allEps){
     bool* firstSet = (bool*)calloc(NUMTOKENS, sizeof(bool));
 
@@ -204,7 +223,16 @@ bool* getFirstSentential(grammarSymbol* sententialForm,int tlen,Grammar* G,bool*
     return firstSet;
 }
 
+// Function to add sync tags in the parser table for the given terminals.
+bool heuristicSync(int terminal){
 
+    return (terminal == TK_SEM || terminal == TK_ENDIF || terminal == TK_ELSE || 
+    terminal == TK_CL || terminal == TK_SQR || terminal == TK_ENDRECORD || 
+    terminal == TK_ENDUNION || terminal == TK_ENDWHILE || terminal == TK_RETURN || 
+    terminal == TK_END);
+}
+
+// Populates the parser table for the given grammar
 void populateParseTable(Grammar* G){
     for(int i=0; i<NUMSYMBOLS; i++){
         for(int j=0; j<NUMTOKENS; j++){
@@ -244,19 +272,20 @@ void populateParseTable(Grammar* G){
                 }
             }
             free(firstSet);
-        }
-    }
-    for(int LHS=0; LHS<NUMSYMBOLS; LHS++){
-        if(isTerminal(LHS)) continue;
-        for(int terminal=0; terminal<NUMTOKENS; terminal++){
-            if(G->follow[LHS][terminal] && G->parseTable[LHS][terminal][0] == PARSER_ERROR){
-                G->parseTable[LHS][terminal][0] = SYN;
-                G->parseTableRuleLen[LHS][terminal] = 0;
+
+            for(int terminal=0; terminal<NUMTOKENS; terminal++){
+                if(G->parseTable[LHS][terminal][0] == PARSER_ERROR && (G->follow[LHS][terminal] || heuristicSync(terminal))){
+                    G->parseTable[LHS][terminal][0] = SYN;
+                    G->parseTableRuleLen[LHS][terminal] = 0;
+                }
             }
         }
     }
 }
 
+// Stack implementation
+
+// Initializes the stack
 Stack* initStack(){
     Stack* stack = (Stack*)malloc(sizeof(Stack));
     memset(stack, 0, sizeof(Stack));
@@ -264,11 +293,13 @@ Stack* initStack(){
     return stack;
 }
 
+// Push function for stack
 void push(Stack* stack, Node* currNode){
     stack->arr[stack->currentSize] = currNode;
     stack->currentSize++;
 }
 
+// Pop function for stack
 Node* pop(Stack* stack){
     if(!stack->currentSize){
         perror("Popping from empty stack.");
@@ -277,6 +308,7 @@ Node* pop(Stack* stack){
     return stack->arr[--(stack->currentSize)];
 }
 
+// Returns top element of the stack.
 Node* top(Stack* stack){
     if(!stack->currentSize){
         perror("Accessing Top element from empty stack.");
@@ -285,10 +317,15 @@ Node* top(Stack* stack){
     return stack->arr[(stack->currentSize) - 1];
 }
 
+// Checks if the stack is empty.
 bool isEmpty(Stack* stack){
     return stack->currentSize <= 0;
 }
 
+// Parse Tree implementation
+
+
+// Function initializes node for the parse tree
 Node* initNode(char* lexeme, double numValue, grammarSymbol nodeSymbol, grammarSymbol parentSymbol, bool isLeafNode){
     Node* curNode = (Node*)malloc(sizeof(Node));
     memset(curNode, 0, sizeof(Node));
@@ -304,10 +341,10 @@ Node* initNode(char* lexeme, double numValue, grammarSymbol nodeSymbol, grammarS
     curNode->isLeafNode = isLeafNode;
     curNode->numChildren = 0;
     // handle the children addition in another function. 
-    // printf("Created node for %s\n", getTokenString(nodeSymbol));
     return curNode;
 }
 
+// Assigns lexeme data to the node from the given token
 void assignLexeme(Node* topNode, TokenInfo* curToken){
     int lexreadLength = strlen(curToken->lexeme) + 1;
     topNode->lexeme = (char*)malloc(sizeof(char) * lexreadLength);
@@ -317,23 +354,35 @@ void assignLexeme(Node* topNode, TokenInfo* curToken){
     return;
 }
 
+// Helper function for panic mode error recovery
 TokenInfo* errorHandler(Grammar* G, Stack* stack, TokenInfo* curToken, TwinBuffer* tb){
     if(isEmpty(stack)){
         return NULL;
     }
     Node* topNode = top(stack);
     if(topNode->isLeafNode){
-        printf("%s and %s dont match\n", getTokenString(topNode->nodeSymbol), curToken->lexeme);
+        printf("Line %d Error : The token %s for lexeme %s does not match with the expected token %s\n",
+            curToken->lineNo,
+            getTokenString(curToken->token),
+            curToken->lexeme,
+            getTokenString(topNode->nodeSymbol));
         pop(stack);
     }else{
         grammarSymbol nonTerminal = topNode->nodeSymbol;
         grammarSymbol terminal = curToken->token;
         if(G->parseTable[nonTerminal][terminal][0] == PARSER_ERROR){
-            printf("Could not parse %s with %s. Getting new token\n", curToken->lexeme, getTokenString(topNode->nodeSymbol));
-            curToken = getNextToken(tb);
-            return curToken;
+            printf("Line %d Error: Invalid token %s encountered with value %s stack top %s\n",
+                curToken->lineNo,
+                getTokenString(curToken->token),
+                curToken->lexeme,
+                getTokenString(topNode->nodeSymbol));
+            curToken = getParserNextToken(tb);
         }else if(G->parseTable[nonTerminal][terminal][0] == SYN){
-            printf("Could not synchronized %s with %s. Popping stack.\n", getTokenString(topNode->nodeSymbol), curToken->lexeme);
+            printf("Line %d Error: Invalid token %s encountered with value %s stack top %s\n",
+                curToken->lineNo,
+                getTokenString(curToken->token),
+                curToken->lexeme,
+                getTokenString(topNode->nodeSymbol));
             pop(stack);
         }else{
             perror("Impossible\n");
@@ -344,7 +393,7 @@ TokenInfo* errorHandler(Grammar* G, Stack* stack, TokenInfo* curToken, TwinBuffe
     return curToken;
 }
 
-
+// Constructs parse tree for the given input file
 Node* constructParseTree(Grammar* G, const char* inputFileName){
     // create stack and twin buffer
     Stack* stack = initStack();
@@ -354,11 +403,12 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
     Node* startNode = initNode(NULL, 0, NT_PROGRAM, -1, false);
     push(stack, startNode);
     // while lexer gives tokens parse them
-    TokenInfo* curToken = getNextToken(tb);
+    TokenInfo* curToken = getParserNextToken(tb);
+    bool hasError = false;
     while(true){
 
         if(curToken == NULL){
-            curToken = getNextToken(tb);
+            curToken = getParserNextToken(tb);
             continue;
         }
         if(strcmp(curToken->lexeme, "EOF") == 0){
@@ -372,9 +422,10 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
             if(isEqual(topNode->nodeSymbol, curToken->token)){
                 assignLexeme(topNode, curToken);
                 pop(stack); // we match
-                curToken = getNextToken(tb);
+                curToken = getParserNextToken(tb);
             }else{
                 // handle non matching terminal error.
+                hasError |= true;
                 curToken = errorHandler(G, stack, curToken, tb);
             }
         }else{
@@ -389,7 +440,6 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
                 // also create the nodes for them while doing so
                 for(int i = G->parseTableRuleLen[nonterminal][terminal] - 1; i >= 0; i--){
                     grammarSymbol curSymb = G->parseTable[nonterminal][terminal][i];
-                    // if(curSymb == EPSILON)continue;
                     bool isLeaf = (isTerminal(curSymb));
                     Node* curSymbNode = initNode(
                         NULL,
@@ -400,14 +450,17 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
                     );
                     topNode->children[i] = curSymbNode;
                     topNode->numChildren++;
-                    if(curSymb != EPSILON)
+                    if(curSymb != EPSILON){
                         push(stack, curSymbNode);
+                    }
                 }
             }else{
                 // top of stack is non terminal who has either PARSER_ERROR or SYN
                 if(G->parseTable[nonterminal][terminal][0] == PARSER_ERROR){
+                    hasError |= true;
                     curToken = errorHandler(G, stack, curToken, tb);
                 }else if(G->parseTable[nonterminal][terminal][0] == SYN){
+                    hasError |= true;
                     curToken = errorHandler(G, stack, curToken, tb);
                 }else{
                     perror("Something other than parser error and syn encountered in parseTable : %d");
@@ -417,35 +470,60 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
             }
         }
     }
-
-    // return root.
+    free(tb);
+    if(hasError){
+        return NULL;
+    }
     return startNode;
 }
 
+// Prints in-order traversal of the given parse tree.
 void printParseTree(Node* root, Node* parent, FILE* fp){
     if(!root){
-        fprintf(fp, "called by %s\n", getTokenString(parent->nodeSymbol));
-        fprintf(fp, "Root is null\n");
         return;
     }
-    if(root->isLeafNode){
-        // fprintf(fp, "Parent %s | Leaf Symbol : %s | Lexeme : %s%c", getTokenString(parent->nodeSymbol), getTokenString(root->nodeSymbol), root->lexeme, (root->lineNo == prevLineNo ? ' ' : '\n'));
-        if(root->nodeSymbol == EPSILON)
-            return;
-        // fprintf(fp, "%s%c", root->lexeme, (root->lineNo == prevLineNo ? ' ' : '\n'));
-        fprintf(fp, "%s\n", root->lexeme);
-        return;
+    if(!root->isLeafNode && root->numChildren > 0){
+        printParseTree(root->children[0], root, fp);
     }
-    // printParseTree(root->children[0], root, fp);
 
-    // fprintf(fp, "Parent %s | Symbol : %s\n\n", getTokenString(parent->nodeSymbol), getTokenString(root->nodeSymbol));
-    for(int i = 0;i < root->numChildren;i++){
-        int t = root->lineNo;
-        printParseTree(root->children[i], root, fp);
+    if(root->nodeSymbol != EPSILON){
+        const char* parSymb = (parent != NULL) ? getTokenString(parent->nodeSymbol) : "ROOT";
+
+        if(root->isLeafNode){
+            if(root->nodeSymbol == TK_NUM){
+                fprintf(fp, "%-25s %-10d %-20s %-15d %-25s %-10s %-25s\n", 
+                    root->lexeme ? root->lexeme : "----", root->lineNo, 
+                    getTokenString(root->nodeSymbol), (int)root->numValue, 
+                    parSymb, "yes", "----");
+            } 
+            else if(root->nodeSymbol == TK_RNUM){
+                fprintf(fp, "%-25s %-10d %-20s %-15.4f %-25s %-10s %-25s\n", 
+                    root->lexeme ? root->lexeme : "----", root->lineNo, 
+                    getTokenString(root->nodeSymbol), root->numValue, 
+                    parSymb, "yes", "----");
+            } 
+            else {
+                fprintf(fp, "%-25s %-10d %-20s %-15s %-25s %-10s %-25s\n", 
+                    root->lexeme ? root->lexeme : "----", root->lineNo, 
+                    getTokenString(root->nodeSymbol), "----", 
+                    parSymb, "yes", "----");
+            }
+        } 
+        else {
+            fprintf(fp, "%-25s %-10s %-20s %-15s %-25s %-10s %-25s\n", 
+                "----", "----", "----", "----", 
+                parSymb, "no", getTokenString(root->nodeSymbol));
+        }
     }
-    return;
+
+    if(!root->isLeafNode){
+        for(int i = 1; i < root->numChildren; i++){
+            printParseTree(root->children[i], root, fp);
+        }
+    }
 }
 
+// Helper function to convert given string to corresponding enum
 grammarSymbol getTokenEnum(const char *str)
 {
     if(strcmp(str, "TK_ASSIGNOP") == 0){
@@ -796,6 +874,7 @@ grammarSymbol getTokenEnum(const char *str)
 
 }
 
+// Helper function to convert enum to string.
 const char* getTokenString(grammarSymbol sym)
 {
     if(sym == TK_ASSIGNOP){
