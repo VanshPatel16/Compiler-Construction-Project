@@ -17,12 +17,12 @@ _main
     type int : b2 ;
     type real : c3 ;
     
-    % LEXICAL ERROR: The Variable ID terminates at d4, because it does not accept x
+    % PARSE ERROR INSPITE OF PROPER TOKENIZATION:
     type int : d4xxxxxxxxxxxxxxxxxxx5 ;
     
     read ( b2 ) ;
     
-    % LEXICAL ERROR: Invalid assignment operator (only 2 hyphens instead of 3)
+    % LEXICAL ERROR: Invalid assignment operator
     b2 <-- 10 ;
     
     % SYNTACTICAL ERROR: Mismatched parenthesis and square bracket
