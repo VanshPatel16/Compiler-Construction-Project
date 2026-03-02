@@ -145,16 +145,14 @@ bool getFollow(grammarSymbol x, Grammar* G){
 
 // Removes whitespaces from the the given buffer(grammar rule).
 void removeWhiteSpaces(char* buffer){
-    int count = 0;
-
+    int cnt = 0;
     for(int i = 0; buffer[i]; i ++){
         if(buffer[i] != ' ' && buffer[i] != '\n' && buffer[i] != '\r' && buffer[i] != '\t'){
-            buffer[count] = buffer[i];
-            count++;
+            buffer[cnt] = buffer[i];
+            cnt++;
         }
     }
-    
-    buffer[count] = '\0';
+    buffer[cnt] = '\0';
     return;
 }
 
@@ -183,21 +181,21 @@ Grammar* constructGrammar(char* inputFile){
         // extract LHS
         grammarSymbol LHS;
         char* rhs;
-        char* savePointer1 = NULL;
-        char* savePointer2 = NULL;
-        char* savePointer3 = NULL;
-        LHS = getTokenEnum(strtok_r(buffer, ">", &savePointer1));
-        rhs = strtok_r(NULL, ">", &savePointer1);
+        char* fwd1 = NULL;
+        char* fwd2 = NULL;
+        char* fwd3 = NULL;
+        LHS = getTokenEnum(strtok_r(buffer, ">", &fwd1));
+        rhs = strtok_r(NULL, ">", &fwd1);
         grammar->rules[LHS].hasEPSILON = false;
         grammar->rules[LHS].LHS = LHS;
 
         // extract RHS rules
         int rlenVal = 0;
-        char* rhsRule = strtok_r(rhs , "|", &savePointer2);
+        char* rhsRule = strtok_r(rhs , "|", &fwd2);
         while(rhsRule != NULL){
             // extract seperate tokens from each RHS rule
             int tlenVal = 0;
-            char* rhsRuleToken = strtok_r(rhsRule, ",", &savePointer3);
+            char* rhsRuleToken = strtok_r(rhsRule, ",", &fwd3);
             
             while(rhsRuleToken != NULL){
                 grammarSymbol tokenValue = getTokenEnum(rhsRuleToken);
@@ -205,13 +203,13 @@ Grammar* constructGrammar(char* inputFile){
                 if(tokenValue == EPSILON){
                     grammar->rules[LHS].hasEPSILON = true;
                 }
-                rhsRuleToken = strtok_r(NULL, ",", &savePointer3);
+                rhsRuleToken = strtok_r(NULL, ",", &fwd3);
                 tlenVal++;
             }
 
             grammar->rules[LHS].tlen[rlenVal] = tlenVal; 
 
-            rhsRule = strtok_r(NULL, "|", &savePointer2);
+            rhsRule = strtok_r(NULL, "|", &fwd2);
             rlenVal++;
         }
 
@@ -225,32 +223,25 @@ Grammar* constructGrammar(char* inputFile){
 
 // Helper function for populate parse table, calculates the first set for a given sentential form
 bool* getFirstSentential(grammarSymbol* sententialForm,int tlen,Grammar* G,bool* allEps){
-    bool* firstSet = (bool*)calloc(NUMTOKENS, sizeof(bool));
-
+    bool* firstSt = (bool*)calloc(NUMTOKENS, sizeof(bool));
     *allEps = true;
-
     for(int symbol = 0; symbol < tlen; symbol++){
         grammarSymbol g = sententialForm[symbol];
-
-        unite(firstSet, G->first[g]);
-
+        unite(firstSt, G->first[g]);
         if(!G->hasEPSILONFirst[g])
         {
             *allEps = false;
             break;
         }
     }
-
-    return firstSet;
+    return firstSt;
 }
 
 // Function to add sync tags in the parse table for the given terminals to help improve error handling.
-bool heuristicSync(int terminal){
-
-    return (terminal == TK_SEM || terminal == TK_ENDIF || terminal == TK_ELSE || 
-    terminal == TK_CL || terminal == TK_SQR || terminal == TK_ENDRECORD || 
-    terminal == TK_ENDUNION || terminal == TK_ENDWHILE || terminal == TK_RETURN || 
-    terminal == TK_END);
+bool heuristicSync(int t){
+    return (t == TK_SEM || t == TK_ENDIF || t == TK_ELSE || t == TK_CL || t == TK_SQR || t == TK_ENDRECORD || 
+    t == TK_ENDUNION || t == TK_ENDWHILE || t == TK_RETURN || 
+    t == TK_END);
 }
 
 // Populates the parse table for the given grammar
@@ -511,54 +502,41 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
 }
 
 // Prints in-order traversal of the given parse tree.
-void printParseTree(Node* root, Node* parent, FILE* fp){
-    if(!root){
+void printParseTree(Node* curNode, Node* parent, FILE* fp){
+    if(!curNode){
         return;
     }
-    if(!root->isLeafNode && root->numChildren > 0){
-        printParseTree(root->children[0], root, fp);
+    if(!curNode->isLeafNode && curNode->numChildren > 0){
+        printParseTree(curNode->children[0], curNode, fp);
     }
-
-    if(root->nodeSymbol != EPSILON){
+    if(curNode->nodeSymbol != EPSILON){
         const char* parSymb = (parent != NULL) ? getTokenString(parent->nodeSymbol) : "ROOT";
-
-        if(root->isLeafNode){
-            if(root->nodeSymbol == TK_NUM){
+        if(curNode->isLeafNode){
+            if(curNode->nodeSymbol == TK_NUM){
                 fprintf(fp, "%-25s %-10d %-20s %-15d %-25s %-10s %-25s\n", 
-                    root->lexeme ? root->lexeme : "----", root->lineNo, 
-                    getTokenString(root->nodeSymbol), (int)root->numValue, 
-                    parSymb, "yes", "----");
+                    curNode->lexeme ? curNode->lexeme : "----", curNode->lineNo,getTokenString(curNode->nodeSymbol), (int)curNode->numValue,parSymb, "yes", "----");
             } 
-            else if(root->nodeSymbol == TK_RNUM){
-                fprintf(fp, "%-25s %-10d %-20s %-15.4f %-25s %-10s %-25s\n", 
-                    root->lexeme ? root->lexeme : "----", root->lineNo, 
-                    getTokenString(root->nodeSymbol), root->numValue, 
-                    parSymb, "yes", "----");
+            else if(curNode->nodeSymbol == TK_RNUM){
+                fprintf(fp, "%-25s %-10d %-20s %-15.4f %-25s %-10s %-25s\n", curNode->lexeme ? curNode->lexeme : "----", curNode->lineNo,getTokenString(curNode->nodeSymbol), curNode->numValue, parSymb, "yes", "----");
             } 
             else {
                 fprintf(fp, "%-25s %-10d %-20s %-15s %-25s %-10s %-25s\n", 
-                    root->lexeme ? root->lexeme : "----", root->lineNo, 
-                    getTokenString(root->nodeSymbol), "----", 
-                    parSymb, "yes", "----");
+                    curNode->lexeme ? curNode->lexeme : "----", curNode->lineNo, getTokenString(curNode->nodeSymbol), "----", parSymb, "yes", "----");
             }
         } 
         else {
-            fprintf(fp, "%-25s %-10s %-20s %-15s %-25s %-10s %-25s\n", 
-                "----", "----", "----", "----", 
-                parSymb, "no", getTokenString(root->nodeSymbol));
+            fprintf(fp, "%-25s %-10s %-20s %-15s %-25s %-10s %-25s\n","----", "----", "----", "----", parSymb, "no", getTokenString(curNode->nodeSymbol));
         }
     }
-
-    if(!root->isLeafNode){
-        for(int i = 1; i < root->numChildren; i++){
-            printParseTree(root->children[i], root, fp);
+    if(!curNode->isLeafNode){
+        for(int i = 1; i < curNode->numChildren; i++){
+            printParseTree(curNode->children[i], curNode, fp);
         }
     }
 }
 
 // Helper function to convert given grammarSymbol string to corresponding enum
-grammarSymbol getTokenEnum(const char *str)
-{
+grammarSymbol getTokenEnum(const char *str){
     if(strcmp(str, "TK_ASSIGNOP") == 0){
         return TK_ASSIGNOP;
     }
@@ -908,8 +886,7 @@ grammarSymbol getTokenEnum(const char *str)
 }
 
 // Helper function to convert enum to string.
-const char* getTokenString(grammarSymbol sym)
-{
+const char* getTokenString(grammarSymbol sym){
     if(sym == TK_ASSIGNOP){
         return "TK_ASSIGNOP";
     }
