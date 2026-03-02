@@ -568,6 +568,8 @@ Token tokenizeComment(char* lexeme, TwinBuffer* tb){
         c = getNextChar(tb);
         if(c == '\n'){
             return LEX_TK_COMMENT;
+        }else if(c == EOF){
+            return -1;
         }
     }
 
@@ -625,7 +627,7 @@ Safely brings the next chunk of data to the next half of the twin buffer.
 */
 void getFileStream(TwinBuffer* tb){
     if(tb->isLastChunk){
-        perror("$ Reached");
+        perror("Demanded dollar stream even after obtaining the last chunk");
         exit(1);
     }
     size_t read = fread(tb->buffer + tb->tbStart, sizeof(char), BUFFSIZE, tb->fp);
@@ -722,6 +724,9 @@ TokenInfo* getNextToken(TwinBuffer* tb){
         tkLineNo = lineNo;
         isCmt = true;
         lineNo++; // !!! Incremented line number on encountering \n;
+        if(token == -1){
+            return createToken(LEX_TK_COMMENT, "EOF", lineNo - 1, numValue);
+        }
     }else if(isBracket(c)){
         token = tokenizeBracket(lexeme, tb);
     }else if(isArithmeticOp(c)){

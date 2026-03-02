@@ -16,10 +16,10 @@ int main(int argc, char* argv[]){
     printf("Implementation Status : \n");
     printf("\t1.) First and Follow set computation Automated (refer calculateFirstSets() and calculateFollowSets() in parser.c file)\n");
     printf("\t2.) Both Lexical and Syntax Analyzer modules implemented with no segmentation fault (refer lexer.c and parser.c)\n");
-    printf("\t3.) Module work with all the provided testcases (from t1 to t6)\n");
+    printf("\t3.) Module works with all the provided testcases (from t1 to t6)\n");
     printf("\t4.) Parse Tree computed without errors for error-free code and will be printed to the output file %s, errors will be displayed on the console otherwise\n", argv[2]);
     while(true){
-        printf("Enter\n\t0 : Quit\n\t1 : For removing comments from %s and printing to the console\n\t2 : For printing the lexer output to the console\n\t3 : For parsing the input and printing parse tree to file %s\n\t4 : Measure the execution time for parsing the input and constructing the parse tree\n", argv[1], argv[2]);
+        printf("Interactor\n\t0 : Quit\n\t1 : For removing comments from %s and printing to the console\n\t2 : For printing the lexer output to the console\n\t3 : For parsing the input and printing parse tree to file %s\n\t4 : Measure the execution time for parsing the input and constructing the parse tree\n", argv[1], argv[2]);
         int op;
         printf("Input operation : ");
         scanf("%d", &op);
@@ -41,6 +41,10 @@ int main(int argc, char* argv[]){
                     continue;
                 }
                 if(strcmp(curToken->lexeme, "EOF") == 0){
+                    if(curToken->token == LEX_TK_COMMENT){
+                        curToken->lexeme = "%";
+                        printf("Token: %-15s | Lexeme: %-15s | Line: %-5d\n", getTokenString(curToken->token), curToken->lexeme, curToken->lineNo);
+                    }
                     break;
                 }
                 printf("Token: %-15s | Lexeme: %-15s | Line: %-5d\n", getTokenString(curToken->token), curToken->lexeme, curToken->lineNo);
