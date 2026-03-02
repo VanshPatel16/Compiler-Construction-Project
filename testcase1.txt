@@ -1,0 +1,43 @@
+% Test Case 1: Syntactically Correct
+
+
+_main
+    type int : b2 ;
+    type int : c3 ;
+    type int : d4 ;
+    type real : b5 ;
+    
+    read ( b2 ) ;
+    read ( c3 ) ;
+    
+    d4 <--- 0 ;
+    b5 <--- 1.00 ;
+    
+    while ( b2 <= 100 )
+        if ( ( b2 > 50 ) &&& ( c3 < 20 ) ) then
+            d4 <--- d4 + 1 ;
+            b2 <--- b2 + 5 ;
+        else
+            if ( ~ ( c3 == 10 ) ) then
+                d4 <--- d4 - 1 ;
+                c3 <--- c3 + 2 ;
+            else
+                b5 <--- b5 * 2.00E+01 ;
+            endif
+        endif
+        
+        while ( d4 < 5 )
+            d4 <--- d4 + 1 ;
+            write ( d4 ) ;
+        endwhile
+        
+        b2 <--- b2 + 1 ;
+    endwhile
+    
+    if ( ( b5 >= 100.00 ) @@@ ( d4 == 10 ) ) then
+        write ( b5 ) ;
+    else
+        write ( c3 ) ;
+    endif
+    return;
+end

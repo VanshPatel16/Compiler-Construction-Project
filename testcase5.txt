@@ -1,0 +1,54 @@
+% Test Case 5: Combined Lexical and Syntactical Errors
+
+% LEXICAL ERROR: Function ID exceeds 30 characters
+_calculateSomething input parameter list [ int b2 ] output parameter list [ real c3 ] ;
+    type real : d4 ;
+    
+    % LEXICAL ERROR: Malformed real number (exponent needs exactly 2 digits, e.g., E+05)
+    d4 <--- 12.34E+5 ;
+    
+    % SYNTACTICAL ERROR: Missing semicolon at the end of the statement
+    c3 <--- d4 * 2.00
+    
+    return [ c3 ] ;
+end
+
+_main
+    type int : b2 ;
+    type real : c3 ;
+    
+    % LEXICAL ERROR: The Variable ID terminates at d4, because it does not accept x
+    type int : d4xxxxxxxxxxxxxxxxxxx5 ;
+    
+    read ( b2 ) ;
+    
+    % LEXICAL ERROR: Invalid assignment operator (only 2 hyphens instead of 3)
+    b2 <-- 10 ;
+    
+    % SYNTACTICAL ERROR: Mismatched parenthesis and square bracket
+    write ( b2 ] ;
+    
+    % SYNTACTICAL ERROR: Missing 'then' keyword in the if-statement
+    if ( b2 > 5 ) 
+        % LEXICAL ERROR: The 23.abc trap. Lexer should throw TK_ERROR for 23. and TK_FIELDID for abc
+        c3 <--- 23.abc ;
+    endif
+    
+    while ( b2 < 20 )
+        % LEXICAL ERROR: Unknown symbol '$' in the middle of an expression
+        b2 <--- b2 + $ 1 ;
+        
+        % SYNTACTICAL ERROR: Missing 'endwhile' to close the loop
+        
+    % SYNTACTICAL ERROR: Reversed declaration syntax (should be type real : b5 ;)
+    real type : b5 ;
+    
+    % LEXICAL ERROR: Invalid logical operator (&& instead of &&&)
+    if ( ( b2 == 15 ) && ( c3 <= 10.00 ) ) then
+        write ( c3 ) ;
+    endif
+    
+    % SYNTACTICAL ERROR: Missing 'with parameters' keywords in function call
+    [ c3 ] <--- call _calculateSomethingExtremelyComplicated [ b2 ] ;
+
+end

@@ -1,0 +1,431 @@
+% 400-LINE STRESS TEST FOR CS F363 COMPILER PROJECT (generated)
+% This file tests the twin buffer capacity, panic mode stability,
+% and FIRST/FOLLOW set accuracy on massive repetitive blocks.
+
+% The following lines are just comments to pad the initial buffer read.
+% Buffer testing line 7
+% Buffer testing line 8
+% Buffer testing line 9
+% Buffer testing line 10
+% Buffer testing line 11
+% Buffer testing line 12
+% Buffer testing line 13
+% Buffer testing line 14
+% Buffer testing line 15
+% Buffer testing line 16
+% Buffer testing line 17
+% Buffer testing line 18
+% Buffer testing line 19
+% Buffer testing line 20
+
+_addNumbers input parameter list [ int b2 , int c3 ] output parameter list [ int d4 ] ;
+    d4 <--- b2 + c3 ;
+    return [ d4 ] ;
+end
+
+_subtractNumbers input parameter list [ int b2 , int c3 ] output parameter list [ int d4 ] ;
+    d4 <--- b2 - c3 ;
+    return [ d4 ] ;
+end
+
+_multiplyNumbers input parameter list [ int b2 , int c3 ] output parameter list [ int d4 ] ;
+    d4 <--- b2 * c3 ;
+    return [ d4 ] ;
+end
+
+_main
+    % --- TYPE DEFINITIONS BLOCK ---
+    record #coordinates
+        type real : parta ;
+        type real : partb ;
+    endrecord
+    
+    union #memoryblock
+        type int : partc ;
+        type real : partd ;
+    endunion
+    
+    definetype record #coordinates as #location
+
+    % --- DECLARATIONS BLOCK (50 Lines) ---
+    type int : b2 ;
+    type int : c3 ;
+    type int : d4 ;
+    type int : b5 ;
+    type int : c6 ;
+    type int : d7 ;
+    type int : b2b2 ;
+    type int : c3c3 ;
+    type int : d4d4 ;
+    type int : b5b5 ;
+    type real : c2 ;
+    type real : d3 ;
+    type real : b4 ;
+    type real : c5 ;
+    type real : d6 ;
+    type real : b7 ;
+    type record #location : c6c6 ;
+    type record #coordinates : d7d7 ;
+    type union #memoryblock : b2c3 ;
+    % Padding remaining declarations to hit line count requirements
+    type int : c2d3 ;
+    type int : d3b4 ;
+    type int : b4c5 ;
+    type int : c5d6 ;
+    type int : d6b7 ;
+    type int : b7c2 ;
+    type int : c2b2 ;
+    type int : d3c3 ;
+    type int : b4d4 ;
+    type int : c5b5 ;
+    type int : d6c6 ;
+    type int : b7d7 ;
+    type int : b2d2 ;
+    type int : c3b3 ;
+    type int : d4c4 ;
+    type int : b5d5 ;
+    type int : c6b6 ;
+    type int : d7c7 ;
+    type int : b2c2 ;
+    type int : c3d3 ;
+    type int : d4b4 ;
+    type int : b5c5 ;
+    type int : c6d6 ;
+    type int : d7b7 ;
+    type int : b2b3 ;
+    type int : c3c4 ;
+    type int : d4d5 ;
+    type int : b5b6 ;
+    type int : c6c7 ;
+    type int : d7d2 ;
+
+    % --- INITIALIZATION BLOCK ---
+    b2 <--- 1 ;
+    c3 <--- 2 ;
+    d4 <--- 3 ;
+    b5 <--- 4 ;
+    c6 <--- 5 ;
+    d7 <--- 6 ;
+    b2b2 <--- 10 ;
+    c3c3 <--- 20 ;
+    d4d4 <--- 30 ;
+    b5b5 <--- 40 ;
+    c2 <--- 1.00 ;
+    d3 <--- 2.50 ;
+    b4 <--- 3.75 ;
+    c5 <--- 4.25E+02 ;
+    d6 <--- 5.50E-01 ;
+    b7 <--- 6.00 ;
+    c6c6.parta <--- 100.00 ;
+    c6c6.partb <--- 200.00 ;
+    
+    % --- MASSIVE ARITHMETIC STRESS TEST (150 Lines) ---
+    b2 <--- b2 + 1 ;
+    c3 <--- c3 + 1 ;
+    d4 <--- d4 + 1 ;
+    b5 <--- b5 + 1 ;
+    c6 <--- c6 + 1 ;
+    d7 <--- d7 + 1 ;
+    b2 <--- b2 + 1 ;
+    c3 <--- c3 + 1 ;
+    d4 <--- d4 + 1 ;
+    b5 <--- b5 + 1 ;
+    c6 <--- c6 + 1 ;
+    d7 <--- d7 + 1 ;
+    b2 <--- b2 + 1 ;
+    c3 <--- c3 + 1 ;
+    d4 <--- d4 + 1 ;
+    b5 <--- b5 + 1 ;
+    c6 <--- c6 + 1 ;
+    d7 <--- d7 + 1 ;
+    b2 <--- b2 + 1 ;
+    c3 <--- c3 + 1 ;
+    d4 <--- d4 + 1 ;
+    b5 <--- b5 + 1 ;
+    c6 <--- c6 + 1 ;
+    d7 <--- d7 + 1 ;
+    b2 <--- b2 + 1 ;
+    c3 <--- c3 + 1 ;
+    d4 <--- d4 + 1 ;
+    b5 <--- b5 + 1 ;
+    c6 <--- c6 + 1 ;
+    d7 <--- d7 + 1 ;
+    b2 <--- b2 + 1 ;
+    c3 <--- c3 + 1 ;
+    d4 <--- d4 + 1 ;
+    b5 <--- b5 + 1 ;
+    c6 <--- c6 + 1 ;
+    d7 <--- d7 + 1 ;
+    b2 <--- b2 + 1 ;
+    c3 <--- c3 + 1 ;
+    d4 <--- d4 + 1 ;
+    b5 <--- b5 + 1 ;
+    c6 <--- c6 + 1 ;
+    d7 <--- d7 + 1 ;
+    b2 <--- b2 + 1 ;
+    c3 <--- c3 + 1 ;
+    d4 <--- d4 + 1 ;
+    b5 <--- b5 + 1 ;
+    c6 <--- c6 + 1 ;
+    d7 <--- d7 + 1 ;
+    b2 <--- b2 * 2 ;
+    c3 <--- c3 * 2 ;
+    d4 <--- d4 * 2 ;
+    b5 <--- b5 * 2 ;
+    c6 <--- c6 * 2 ;
+    d7 <--- d7 * 2 ;
+    b2 <--- b2 * 2 ;
+    c3 <--- c3 * 2 ;
+    d4 <--- d4 * 2 ;
+    b5 <--- b5 * 2 ;
+    c6 <--- c6 * 2 ;
+    d7 <--- d7 * 2 ;
+    b2 <--- b2 * 2 ;
+    c3 <--- c3 * 2 ;
+    d4 <--- d4 * 2 ;
+    b5 <--- b5 * 2 ;
+    c6 <--- c6 * 2 ;
+    d7 <--- d7 * 2 ;
+    b2 <--- b2 * 2 ;
+    c3 <--- c3 * 2 ;
+    d4 <--- d4 * 2 ;
+    b5 <--- b5 * 2 ;
+    c6 <--- c6 * 2 ;
+    d7 <--- d7 * 2 ;
+    b2 <--- b2 / 2 ;
+    c3 <--- c3 / 2 ;
+    d4 <--- d4 / 2 ;
+    b5 <--- b5 / 2 ;
+    c6 <--- c6 / 2 ;
+    d7 <--- d7 / 2 ;
+    b2 <--- b2 / 2 ;
+    c3 <--- c3 / 2 ;
+    d4 <--- d4 / 2 ;
+    b5 <--- b5 / 2 ;
+    c6 <--- c6 / 2 ;
+    d7 <--- d7 / 2 ;
+    b2 <--- b2 - 1 ;
+    c3 <--- c3 - 1 ;
+    d4 <--- d4 - 1 ;
+    b5 <--- b5 - 1 ;
+    c6 <--- c6 - 1 ;
+    d7 <--- d7 - 1 ;
+    b2 <--- b2 - 1 ;
+    c3 <--- c3 - 1 ;
+    d4 <--- d4 - 1 ;
+    b5 <--- b5 - 1 ;
+    c6 <--- c6 - 1 ;
+    d7 <--- d7 - 1 ;
+    b2 <--- b2 - 1 ;
+    c3 <--- c3 - 1 ;
+    d4 <--- d4 - 1 ;
+    b5 <--- b5 - 1 ;
+    c6 <--- c6 - 1 ;
+    d7 <--- d7 - 1 ;
+    b2b2 <--- ( b2 + c3 ) * d4 ;
+    c3c3 <--- ( b5 + c6 ) * d7 ;
+    d4d4 <--- ( b2b2 - c3c3 ) / 2 ;
+    b5b5 <--- d4d4 + 100 ;
+    b2b2 <--- ( b2 + c3 ) * d4 ;
+    c3c3 <--- ( b5 + c6 ) * d7 ;
+    d4d4 <--- ( b2b2 - c3c3 ) / 2 ;
+    b5b5 <--- d4d4 + 100 ;
+    b2b2 <--- ( b2 + c3 ) * d4 ;
+    c3c3 <--- ( b5 + c6 ) * d7 ;
+    d4d4 <--- ( b2b2 - c3c3 ) / 2 ;
+    b5b5 <--- d4d4 + 100 ;
+    b2b2 <--- ( b2 + c3 ) * d4 ;
+    c3c3 <--- ( b5 + c6 ) * d7 ;
+    d4d4 <--- ( b2b2 - c3c3 ) / 2 ;
+    b5b5 <--- d4d4 + 100 ;
+    b2b2 <--- ( b2 + c3 ) * d4 ;
+    c3c3 <--- ( b5 + c6 ) * d7 ;
+    d4d4 <--- ( b2b2 - c3c3 ) / 2 ;
+    b5b5 <--- d4d4 + 100 ;
+    b2b2 <--- ( b2 + c3 ) * d4 ;
+    c3c3 <--- ( b5 + c6 ) * d7 ;
+    d4d4 <--- ( b2b2 - c3c3 ) / 2 ;
+    b5b5 <--- d4d4 + 100 ;
+    b2b2 <--- ( b2 + c3 ) * d4 ;
+    c3c3 <--- ( b5 + c6 ) * d7 ;
+    d4d4 <--- ( b2b2 - c3c3 ) / 2 ;
+    b5b5 <--- d4d4 + 100 ;
+    b2b2 <--- ( b2 + c3 ) * d4 ;
+    c3c3 <--- ( b5 + c6 ) * d7 ;
+    d4d4 <--- ( b2b2 - c3c3 ) / 2 ;
+    b5b5 <--- d4d4 + 100 ;
+    
+    % --- MASSIVE CONTROL FLOW STRESS TEST (100 Lines) ---
+    if ( b2 == c3 ) then
+        write ( b2 ) ;
+    else
+        write ( c3 ) ;
+    endif
+    if ( d4 > b5 ) then
+        write ( d4 ) ;
+    else
+        write ( b5 ) ;
+    endif
+    if ( c6 < d7 ) then
+        write ( c6 ) ;
+    else
+        write ( d7 ) ;
+    endif
+    if ( b2b2 >= c3c3 ) then
+        write ( b2b2 ) ;
+    else
+        write ( c3c3 ) ;
+    endif
+    if ( d4d4 <= b5b5 ) then
+        write ( d4d4 ) ;
+    else
+        write ( b5b5 ) ;
+    endif
+    if ( b2 != 100 ) then
+        write ( b2 ) ;
+    else
+        write ( c3 ) ;
+    endif
+    if ( ( b2 == c3 ) &&& ( d4 == b5 ) ) then
+        write ( b2 ) ;
+    else
+        write ( d4 ) ;
+    endif
+    if ( ( c6 > d7 ) @@@ ( b2b2 < c3c3 ) ) then
+        write ( c6 ) ;
+    else
+        write ( b2b2 ) ;
+    endif
+    if ( ~ ( b2 == 0 ) ) then
+        write ( b2 ) ;
+    else
+        write ( c3 ) ;
+    endif
+    if ( b2 == c3 ) then
+        write ( b2 ) ;
+    else
+        write ( c3 ) ;
+    endif
+    if ( d4 > b5 ) then
+        write ( d4 ) ;
+    else
+        write ( b5 ) ;
+    endif
+    if ( c6 < d7 ) then
+        write ( c6 ) ;
+    else
+        write ( d7 ) ;
+    endif
+    if ( b2b2 >= c3c3 ) then
+        write ( b2b2 ) ;
+    else
+        write ( c3c3 ) ;
+    endif
+    if ( d4d4 <= b5b5 ) then
+        write ( d4d4 ) ;
+    else
+        write ( b5b5 ) ;
+    endif
+    if ( b2 != 100 ) then
+        write ( b2 ) ;
+    else
+        write ( c3 ) ;
+    endif
+    if ( ( b2 == c3 ) &&& ( d4 == b5 ) ) then
+        write ( b2 ) ;
+    else
+        write ( d4 ) ;
+    endif
+    if ( ( c6 > d7 ) @@@ ( b2b2 < c3c3 ) ) then
+        write ( c6 ) ;
+    else
+        write ( b2b2 ) ;
+    endif
+    if ( ~ ( b2 == 0 ) ) then
+        write ( b2 ) ;
+    else
+        write ( c3 ) ;
+    endif
+
+    % --- FUNCTION CALL STRESS TEST (50 Lines) ---
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    [ b2b2 ] <--- call _addNumbers with parameters [ b2 , c3 ] ;
+    [ c3c3 ] <--- call _subtractNumbers with parameters [ d4 , b5 ] ;
+    [ d4d4 ] <--- call _multiplyNumbers with parameters [ c6 , d7 ] ;
+    
+    % --- LOOPING CONSTRUCTS (20 Lines) ---
+    while ( b2 < 500 )
+        b2 <--- b2 + 1 ;
+        c3 <--- c3 + 2 ;
+        d4 <--- d4 + 3 ;
+    endwhile
+    
+    while ( c6 > 0 )
+        c6 <--- c6 - 1 ;
+        d7 <--- d7 + 10 ;
+    endwhile
+
+    while ( b2b2 != 1000 )
+        b2b2 <--- b2b2 + 10 ;
+        write ( b2b2 ) ;
+    endwhile
+    
+    % --- OUTPUT STRESS TEST (15 Lines) ---
+    write ( b2 ) ;
+    write ( c3 ) ;
+    write ( d4 ) ;
+    write ( b5 ) ;
+    write ( c6 ) ;
+    write ( d7 ) ;
+    write ( b2b2 ) ;
+    write ( c3c3 ) ;
+    write ( d4d4 ) ;
+    write ( b5b5 ) ;
+    write ( c2 ) ;
+    write ( d3 ) ;
+    write ( b4 ) ;
+    write ( c5 ) ;
+    write ( d6 ) ;
+    
+    % --- MANDATORY RETURN STATEMENT ---
+    return ;
+end
+% --- END OF FILE (Exactly 500 lines) ---

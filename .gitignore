@@ -1,7 +1,7 @@
 *.exe
 /Lexer Test Cases
 /Parser Test Cases
-*txt
+# *txt
 .obsidian
 caveats.txt
 design_choices.txt

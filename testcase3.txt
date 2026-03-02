@@ -1,0 +1,38 @@
+% Test Case 3: Checks all lexical errors
+
+_main
+    % Invalid variable: Does not start with b, c, or d so lexer tokenizes a as TK_FIELDID and 23 as TK_NUM
+    type int : a23 ;
+    
+    % Invalid variable: Contains letters other than b, c, d so lexer tokenizes b2 as TK_ID and x as TK_FIELDID and 7 as TK_NUM
+    type int : b2x7 ;
+    
+    % Invalid real: Missing two digits after E 
+    type real : c3 ;
+    c3 <--- 12.34E5 ;
+    
+    % Invalid real: Only one digit after decimal
+    type real : d4 ;
+    d4 <--- 12.3 ;
+    
+    % Illegal characters
+    $
+    ^
+    
+    % Invalid assignment operator (only two hyphens)
+    b2 <-- 5 ;
+    
+    % Invalid logical operators
+    if ( b2 & 5 ) then
+        write ( b2 ) ;
+    endif
+    
+    if ( c3 | 4.00 ) then
+        write ( c3 ) ;
+    endif
+    
+    % Invalid equality operator (requires ==)
+    if ( b2 = 5 ) then
+        b2 <--- 6 ;
+    endif
+end

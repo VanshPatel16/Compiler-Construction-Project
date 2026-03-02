@@ -1,3 +1,12 @@
+/*
+ * Group ID - 2
+ *  Vansh Patel         - 2023A7PS0629P
+ *  Darshil Chauhan     - 2023A7PS0609P
+ *  Adityasinh Solanki  - 2023A7PS0615P
+ *  Sneh Desai          - 2023A7PS0498P
+ *  Gautam Singhvie     - 2023A7PS0612P
+ *  Kanav Kapoor        - 2023A7TS0628P
+ */
 #include <time.h>
 #include "lexer.h"
 #include "parser.h"
@@ -86,6 +95,6 @@ int main(int argc, char* argv[]){
         }else{
             printf("Invalid input! Please enter only numbers 0 to 4\n");
         }
-        printf("--------------------------------------------------------------------------------\n");
+        printf("-----------------------------------------------------------------------------------------------------------------------\n");
     }
 }
