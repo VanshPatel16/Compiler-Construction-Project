@@ -46,7 +46,7 @@ bool isArithmeticOp(char c){
     return (c == '+' || c == '-' || c == '*' || c == '/');
 }
 bool isWhiteSpace(char c){
-    return (c == ' ' || c == '\t' || c == '\n');
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
 }
 
 void handleWhiteSpace(char c){
@@ -677,7 +677,7 @@ TokenInfo* createToken(Token token, char* lexeme, int lineNo, double numValue){
 }
 /*
 The entire implemenation of the Lexer boils down to this function.
-- Purpose : Take in the current sate of the Twin Buffer, and return the Next Token while following the DFA.
+- Purpose : Take in the current state of the Twin Buffer, and return the Next Token while following the DFA.
             We make sure to ONLY return a valid token, or an EOF token which is used to indicate the end of input stream.
             If we encounter an error, they're printed to the console/terminal, but we never return them.
             Instead we recursively call the same function again to eat the input until we can obtain a valid token.

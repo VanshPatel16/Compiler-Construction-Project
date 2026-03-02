@@ -1,5 +1,5 @@
-# test.txt
 *.exe
 /Lexer Test Cases
 /Parser Test Cases
 *txt
+.obsidian

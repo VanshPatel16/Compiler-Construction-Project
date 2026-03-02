@@ -1,88 +1,87 @@
-
-// contains main()
-#include <stdio.h>
+#include <time.h>
 #include "lexer.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "parser.h"
 
-const char* tokenToString(enum token_enum token) {
-    switch (token) {
-        case LEX_TK_ASSIGNOP:   return "TK_ASSIGNOP";
-        case LEX_TK_COMMENT:    return "TK_COMMENT";
-        case LEX_TK_FIELDID:    return "TK_FIELDID";
-        case LEX_TK_ID:         return "TK_ID";
-        case LEX_TK_NUM:        return "TK_NUM";
-        case LEX_TK_RNUM:       return "TK_RNUM";
-        case LEX_TK_FUNID:      return "TK_FUNID";
-        case LEX_TK_RUID:       return "TK_RUID";
-        case LEX_TK_WITH:       return "TK_WITH";
-        case LEX_TK_PARAMETERS: return "TK_PARAMETERS";
-        case LEX_TK_END:        return "TK_END";
-        case LEX_TK_WHILE:      return "TK_WHILE";
-        case LEX_TK_UNION:      return "TK_UNION";
-        case LEX_TK_ENDUNION:   return "TK_ENDUNION";
-        case LEX_TK_DEFINETYPE: return "TK_DEFINETYPE";
-        case LEX_TK_AS:         return "TK_AS";
-        case LEX_TK_TYPE:       return "TK_TYPE";
-        case LEX_TK_MAIN:       return "TK_MAIN";
-        case LEX_TK_GLOBAL:     return "TK_GLOBAL";
-        case LEX_TK_PARAMETER:  return "TK_PARAMETER";
-        case LEX_TK_LIST:       return "TK_LIST";
-        case LEX_TK_SQL:        return "TK_SQL";
-        case LEX_TK_SQR:        return "TK_SQR";
-        case LEX_TK_INPUT:      return "TK_INPUT";
-        case LEX_TK_OUTPUT:     return "TK_OUTPUT";
-        case LEX_TK_INT:        return "TK_INT";
-        case LEX_TK_REAL:       return "TK_REAL";
-        case LEX_TK_COMMA:      return "TK_COMMA";
-        case LEX_TK_SEM:        return "TK_SEM";
-        case LEX_TK_COLON:      return "TK_COLON";
-        case LEX_TK_DOT:        return "TK_DOT";
-        case LEX_TK_ENDWHILE:   return "TK_ENDWHILE";
-        case LEX_TK_OP:         return "TK_OP";
-        case LEX_TK_CL:         return "TK_CL";
-        case LEX_TK_IF:         return "TK_IF";
-        case LEX_TK_THEN:       return "TK_THEN";
-        case LEX_TK_ENDIF:      return "TK_ENDIF";
-        case LEX_TK_READ:       return "TK_READ";
-        case LEX_TK_WRITE:      return "TK_WRITE";
-        case LEX_TK_RETURN:     return "TK_RETURN";
-        case LEX_TK_PLUS:       return "TK_PLUS";
-        case LEX_TK_MINUS:      return "TK_MINUS";
-        case LEX_TK_MUL:        return "TK_MUL";
-        case LEX_TK_DIV:        return "TK_DIV";
-        case LEX_TK_CALL:       return "TK_CALL";
-        case LEX_TK_RECORD:     return "TK_RECORD";
-        case LEX_TK_ENDRECORD:  return "TK_ENDRECORD";
-        case LEX_TK_ELSE:       return "TK_ELSE";
-        case LEX_TK_AND:        return "TK_AND";
-        case LEX_TK_OR:         return "TK_OR";
-        case LEX_TK_NOT:        return "TK_NOT";
-        case LEX_TK_LT:         return "TK_LT";
-        case LEX_TK_LE:         return "TK_LE";
-        case LEX_TK_EQ:         return "TK_EQ";
-        case LEX_TK_GT:         return "TK_GT";
-        case LEX_TK_GE:         return "TK_GE";
-        case LEX_TK_NE:         return "TK_NE";
-        default:            return "UNKNOWN_TOKEN";
+int main(int argc, char* argv[]){
+    if (argc < 3) {
+        printf("Usage: %s <testcaseFile> <parsetreeOutFile>\n", argv[0]);
+        return 1;
     }
-}
-void main()
-{
-    TwinBuffer* tb = (TwinBuffer*) malloc(sizeof(struct twinbuffer));
-    init("Lexer Test Cases/t1.txt", tb);
-    FILE* fp = fopen("lexer_result.txt", "w");
+    // Assign arguments to your variables
+    char * ipFile = argv[1];
+    char * opFile = argv[2];
+    char * ruleFile = "grammar.txt";
+    printf("Testcase file : %s\n", argv[1]);
+    printf("Output file : %s\n", argv[2]);
+    printf("Implementation Status : \n");
+    printf("\t1.) First and Follow set computation Automated (refer calculateFirstSets() and calculateFollowSets() in parser.c file)\n");
+    printf("\t2.) Both Lexical and Syntax Analyzer modules implemented with no segmentation fault (refer lexer.c and parser.c)\n");
+    printf("\t3.) Module work with all the provided testcases (from t1 to t6)\n");
+    printf("\t4.) Parse Tree computed without errors for error-free code and will be printed to the output file %s, errors will be displayed on the console otherwise\n", argv[2]);
     while(true){
-        TokenInfo* curToken = getNextToken(tb);
-        if(curToken == NULL){
-            continue;
-        }
-        if(strcmp(curToken->lexeme, "EOF") == 0){
+        printf("Enter\n\t0 : Quit\n\t1 : For removing comments from %s and printing to the console\n\t2 : For printing the lexer output to the console\n\t3 : For parsing the input and printing parse tree to file %s\n\t4 : Measure the execution time for parsing the input and constructing the parse tree\n", argv[1], argv[2]);
+        int op;
+        printf("Input operation : ");
+        scanf("%d", &op);
+        
+        if(op == 0){
+            printf("\n\t\tRegards from Group 2!\n");
             break;
         }
-        fprintf(fp, "Line no. %d\t Lexeme %s\t\tToken %s\n", curToken->lineNo, curToken->lexeme, tokenToString(curToken->token));
+        else if(op == 1){
+            removeComments(ipFile);
+            printf("\n\t\tRemoved comments\n");
+        }
+        else if(op == 2){
+            TwinBuffer* tb = (TwinBuffer*) malloc(sizeof(struct twinbuffer));
+            init(ipFile, tb);
+            while(true){
+                TokenInfo* curToken = getNextToken(tb);
+                if(curToken == NULL){
+                    continue;
+                }
+                if(strcmp(curToken->lexeme, "EOF") == 0){
+                    break;
+                }
+                printf("Token: %-15s | Lexeme: %-15s | Line: %-5d\n", getTokenString(curToken->token), curToken->lexeme, curToken->lineNo);
+            }
+            free(tb);
+            printf("\n\t\tLexer Output Printing Complete\n");
+        }
+        else if(op == 3){
+            Grammar* G=constructGrammar("grammar.txt");
+            calculateFirstSets(G);
+            calculateFollowSets(G);
+            populateParseTable(G);
+            Node* root = constructParseTree(G, ipFile);
+            FILE* fp = fopen(opFile, "w");
+            if(root!=NULL){
+                printParseTree(root, root, fp);
+                printf("\n\t\tParsed the input using the grammar and printed the parse tree to file %s\n", argv[2]);
+                fflush(fp);
+            }else{
+                printf("\n\t\tParsed the input using the grammar and printed the flagged the errors.\n");
+            }
+            free(G);
+        }
+        else if(op == 4){
+            clock_t start_time, end_time;
+            double total_CPU_time, total_CPU_time_in_seconds;
+            start_time = clock();
+            Grammar* G = constructGrammar(ruleFile);
+            calculateFirstSets(G);
+            calculateFollowSets(G);
+            populateParseTable(G);
+            Node* root = constructParseTree(G, ipFile);
+            end_time = clock();
+            total_CPU_time = (double) (end_time - start_time);
+            total_CPU_time_in_seconds = total_CPU_time / CLOCKS_PER_SEC;
+            printf("\nTotal CPU time (ticks): %f\n", total_CPU_time);
+            printf("Total CPU time (seconds): %f\n", total_CPU_time_in_seconds);
+            if(G) free(G);
+        }else{
+            printf("Invalid input! Please enter only numbers 0 to 4\n");
+        }
+        printf("--------------------------------------------------------------------------------\n");
     }
-
-    // removeComments("Lexer Test Cases/t2.txt", "outputtest.txt");
 }

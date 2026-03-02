@@ -488,7 +488,7 @@ Node* constructParseTree(Grammar* G, const char* inputFileName){
                     curToken = errorHandler(G, stack, curToken, tb);
                 }else{
                     perror("Something other than parser error and syn encountered in parseTable : %d");
-                    printf("Found %d : ", G->parseTable[nonterminal][terminal]);
+                    printf("Found %d : ", G->parseTable[nonterminal][terminal][0]);
                     exit(1);
                 }
             }
